@@ -1,5 +1,7 @@
 package br.edu.ifs.academico.controller;
 
+import br.edu.ifs.academico.DTO.UsuarioDTO;
+import br.edu.ifs.academico.DTO.UsuarioLoginDTO;
 import br.edu.ifs.academico.entity.Usuario;
 import br.edu.ifs.academico.service.JwtService;
 import br.edu.ifs.academico.service.MyUserDetailsService;
@@ -34,10 +36,10 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody Usuario usuario) {
+    public ResponseEntity<?> login(@RequestBody UsuarioLoginDTO usuario) {
         try {
             Authentication authentication = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(usuario.getEmail(), usuario.getSenha())
+                    new UsernamePasswordAuthenticationToken(usuario.email(), usuario.senha())
             );
 
             UserDetails userDetails = (UserDetails) authentication.getPrincipal();
@@ -50,8 +52,8 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<?> register(@RequestBody Usuario usuario) {
-        if (userDetailsService.existsByEmail(usuario.getEmail())) {
+    public ResponseEntity<?> register(@RequestBody UsuarioDTO usuario) {
+        if (userDetailsService.existsByEmail(usuario.email())) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body("Email já cadastrado");
         }
