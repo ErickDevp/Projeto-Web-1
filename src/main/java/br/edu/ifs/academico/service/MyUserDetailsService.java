@@ -1,5 +1,6 @@
 package br.edu.ifs.academico.service;
 
+import br.edu.ifs.academico.DTO.UsuarioDTO;
 import br.edu.ifs.academico.entity.Usuario;
 import br.edu.ifs.academico.repository.UsuarioRepository;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -39,8 +40,16 @@ public class MyUserDetailsService implements UserDetailsService {
     }
 
     // Salva usuário com senha criptografada
-    public Usuario saveUsuario(Usuario usuario) {
-        usuario.setSenha(passwordEncoder.encode(usuario.getSenha()));
-        return usuarioRepository.save(usuario);
+    public Usuario saveUsuario(UsuarioDTO usuario) {
+        var entity = new Usuario(
+                null,
+                usuario.nome(),
+                usuario.email(),
+                usuario.senha()
+        );
+
+        entity.setSenha(passwordEncoder.encode(entity.getSenha()));
+
+        return usuarioRepository.save(entity);
     }
 }
