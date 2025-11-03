@@ -2,11 +2,16 @@ package br.edu.ifs.academico.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+import java.util.List;
+
 @Entity
 @Table(name = "tb_usuario")
+@Builder
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -24,5 +29,26 @@ public class Usuario {
 
     @Column(nullable = false)
     private String senha;
+
+    @Column(nullable = false, updatable = false)
+    private LocalDateTime criado_em;
+
+    @PrePersist
+    protected void onCreate() {
+        this.criado_em = LocalDateTime.now();
+    }
+
+    @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Notificacao> notificacao;
+
+    @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<MovimentacaoPontos> movimentacao;
+
+    @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<CartaoUsuario> cartao;
+
+    @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<SaldoUsuarioPrograma> saldo;
+
 
 }

@@ -40,15 +40,12 @@ public class MyUserDetailsService implements UserDetailsService {
     }
 
     // Salva usuário com senha criptografada
-    public Usuario saveUsuario(UsuarioDTO usuario) {
-        var entity = new Usuario(
-                null,
-                usuario.nome(),
-                usuario.email(),
-                usuario.senha()
-        );
-
-        entity.setSenha(passwordEncoder.encode(entity.getSenha()));
+    public Usuario saveUsuario(UsuarioDTO usuarioDTO) {
+        Usuario entity = Usuario.builder()
+                .nome(usuarioDTO.nome())
+                .email(usuarioDTO.email())
+                .senha(passwordEncoder.encode(usuarioDTO.senha()))
+                .build();
 
         return usuarioRepository.save(entity);
     }
