@@ -22,8 +22,9 @@ public class MovimentacaoPontos {
 
     private BigDecimal valor;
     private Integer pontos_calculados;
-    private LocalDate data_ocorrencia;
     private String status;
+    private LocalDate data_ocorrencia;
+
 
     @OneToMany(mappedBy = "movimentacao", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Comprovante> comprovante;
