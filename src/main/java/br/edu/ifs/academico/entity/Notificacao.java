@@ -2,11 +2,13 @@ package br.edu.ifs.academico.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "tb_notificacao")
+@Builder
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
