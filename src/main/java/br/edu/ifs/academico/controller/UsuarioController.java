@@ -1,9 +1,12 @@
 package br.edu.ifs.academico.controller;
 
 import br.edu.ifs.academico.DTO.UsuarioDTO;
+import br.edu.ifs.academico.entity.Usuario;
 import br.edu.ifs.academico.service.UsuarioService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -23,16 +26,20 @@ public class UsuarioController {
         return ResponseEntity.ok(usuarioService.buscarUsuario(email));
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<Void> updateUser(@PathVariable Long id, @RequestBody UsuarioDTO dto) {
-        usuarioService.atualizarUsuario(id, dto);
-        return ResponseEntity.noContent().build();
+    @PutMapping("/me")
+    public ResponseEntity<UsuarioDTO> atualizarMeuPerfil(
+            @AuthenticationPrincipal UserDetails userDetails,
+            @RequestBody UsuarioDTO usuarioDTO) {
+
+        usuarioService.atualizarUsuario(usuarioDTO, userDetails.getUsername());
+        return ResponseEntity.ok().build();
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
-        usuarioService.apagarUsuario(id);
+    @DeleteMapping("/me")
+    public ResponseEntity<Void> deletarMinhaConta(
+            @AuthenticationPrincipal UserDetails userDetails
+    ) {
+        usuarioService.apagarUsuario(userDetails.getUsername());
         return ResponseEntity.noContent().build();
     }
-
 }

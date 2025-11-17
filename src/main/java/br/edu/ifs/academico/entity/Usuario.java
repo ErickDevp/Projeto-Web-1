@@ -1,5 +1,6 @@
 package br.edu.ifs.academico.entity;
 
+import br.edu.ifs.academico.entity.enums.Role;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -10,7 +11,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
-@Table(name = "tb_usuario")
+@Table(name = "tb_usuarios")
 @Builder
 @Data
 @AllArgsConstructor
@@ -29,6 +30,9 @@ public class Usuario {
 
     @Column(nullable = false)
     private String senha;
+
+    @Enumerated(EnumType.STRING)
+    private Role role;
 
     @Column(nullable = false, updatable = false)
     private LocalDateTime criado_em;

@@ -28,36 +28,20 @@ public class UsuarioService {
         );
     }
 
-    public void atualizarUsuario(Long id, UsuarioDTO usuarioDTO) {
-        var usuarioEntity = usuarioRepository.findById(id);
+    public void atualizarUsuario(UsuarioDTO usuarioDTO, String emailLogado) {
+        var usuario = usuarioRepository.findByEmail(emailLogado)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuário não encontrado"));
 
-        if(usuarioEntity.isPresent()) {
-            var usuario = usuarioEntity.get();
+        if (usuarioDTO.nome() != null) usuario.setNome(usuarioDTO.nome());
+        if (usuarioDTO.email() != null) usuario.setEmail(usuarioDTO.email());
 
-            if(usuarioDTO.nome() != null) {
-                usuario.setNome(usuarioDTO.nome());
-            }
-
-            if(usuarioDTO.email() != null) {
-                usuario.setEmail(usuarioDTO.email());
-            }
-
-            /* Ainda nao sei se devo coloca-lo aqui
-            if (usuarioDTO.senha() != null && !usuarioDTO.senha().isBlank()) {
-                usuario.setSenha(passwordEncoder.encode(usuarioDTO.senha()));
-            }
-            */
-
-            usuarioRepository.save(usuario);
-        }
+        usuarioRepository.save(usuario);
     }
 
-    public void apagarUsuario(Long id) {
-        var usuarioExiste = usuarioRepository.existsById(id);
+    public void apagarUsuario(String emailLogado) {
+        var usuario = usuarioRepository.findByEmail(emailLogado)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuário não encontrado"));
 
-        if(usuarioExiste) {
-            usuarioRepository.deleteById(id);
-        }
+        usuarioRepository.delete(usuario);
     }
-
 }
