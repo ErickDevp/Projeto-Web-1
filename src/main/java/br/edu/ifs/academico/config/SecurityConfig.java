@@ -4,6 +4,7 @@ import br.edu.ifs.academico.security.JwtAuthFilter;
 import br.edu.ifs.academico.service.MyUserDetailsService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -41,7 +42,13 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/usuarios/**", "/auth/**").permitAll()
+                        .requestMatchers( "/auth/**").permitAll()
+                        .requestMatchers(HttpMethod.PUT, "/usuarios/**").authenticated()
+                        .requestMatchers(HttpMethod.DELETE, "/usuarios/**").authenticated()
+
+                        .requestMatchers(HttpMethod.POST, SecurityEndpoints.ADMIN_WRITE).hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT,  SecurityEndpoints.ADMIN_WRITE).hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, SecurityEndpoints.ADMIN_WRITE).hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

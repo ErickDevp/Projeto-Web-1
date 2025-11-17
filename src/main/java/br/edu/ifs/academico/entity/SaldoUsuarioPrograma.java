@@ -2,13 +2,15 @@ package br.edu.ifs.academico.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
 
 @Entity
-@Table(name = "tb_saldo")
+@Table(name = "tb_saldos")
+@Builder
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

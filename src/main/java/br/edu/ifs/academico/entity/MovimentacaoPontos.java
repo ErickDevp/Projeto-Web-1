@@ -2,6 +2,7 @@ package br.edu.ifs.academico.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -11,13 +12,14 @@ import java.util.List;
 
 @Entity
 @Table(name = "tb_movimentacao")
+@Builder
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 public class MovimentacaoPontos {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id_movimentacao")
+    @Column(name = "id_movimentacoes")
     private Long id;
 
     private BigDecimal valor;
@@ -25,12 +27,11 @@ public class MovimentacaoPontos {
     private String status;
     private LocalDate data_ocorrencia;
 
-
     @OneToMany(mappedBy = "movimentacao", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Comprovante> comprovante;
 
-    @OneToMany(mappedBy = "movimentacao", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<HistoricoStatusMovimentacao> historico;
+    @OneToOne(mappedBy = "movimentacao", cascade = CascadeType.ALL, orphanRemoval = true)
+    private HistoricoStatusMovimentacao historico;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "id_usuario", nullable = false)

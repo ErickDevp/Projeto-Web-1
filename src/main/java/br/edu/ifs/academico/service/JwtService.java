@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import java.security.Key;
 import java.util.Date;
+import java.util.Map;
 
 @Service
 public class JwtService {
@@ -16,6 +17,14 @@ public class JwtService {
     private final Key key = Keys.hmacShaKeyFor("MINHA_CHAVE_SUPER_SECRETA_COM_256_BITS_PARA_JWT!!!".getBytes());
 
     public String generateToken(UserDetails userDetails) {
+        String role = userDetails.getAuthorities().stream()
+                .findFirst()
+                .map(a -> a.getAuthority())
+                .orElse("USER");
+
+        Map<String, Object> claims = Map.of("role", role);
+
+
         return Jwts.builder()
                 .setSubject(userDetails.getUsername())
                 .setIssuedAt(new Date())

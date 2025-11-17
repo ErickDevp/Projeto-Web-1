@@ -1,8 +1,9 @@
 package br.edu.ifs.academico.DTO;
 
 public record ComprovanteDTO(
-        String Caminho,
+        Long movimentacaoId,
+        String caminho,
         String tipo_arq,
-        String tamanho_bytes
+        Long tamanho_bytes
 ) {
 }

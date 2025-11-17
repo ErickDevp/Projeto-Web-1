@@ -2,7 +2,10 @@ package br.edu.ifs.academico.service;
 
 import br.edu.ifs.academico.DTO.UsuarioDTO;
 import br.edu.ifs.academico.entity.Usuario;
+import br.edu.ifs.academico.entity.enums.Role;
 import br.edu.ifs.academico.repository.UsuarioRepository;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -10,6 +13,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.List;
 
 @Service
 public class MyUserDetailsService implements UserDetailsService {
@@ -27,10 +31,14 @@ public class MyUserDetailsService implements UserDetailsService {
         Usuario usuario = usuarioRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado"));
 
+        List<GrantedAuthority> authorities = List.of(
+                new SimpleGrantedAuthority(usuario.getRole().name())
+        );
+
         return new org.springframework.security.core.userdetails.User(
                 usuario.getEmail(),
                 usuario.getSenha(),
-                new ArrayList<>() // roles/authorities podem ser adicionadas aqui
+                authorities
         );
     }
 
@@ -45,6 +53,7 @@ public class MyUserDetailsService implements UserDetailsService {
                 .nome(usuarioDTO.nome())
                 .email(usuarioDTO.email())
                 .senha(passwordEncoder.encode(usuarioDTO.senha()))
+                .role(Role.USER)
                 .build();
 
         return usuarioRepository.save(entity);
