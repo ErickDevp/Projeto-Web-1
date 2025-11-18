@@ -1,5 +1,6 @@
 package br.edu.ifs.academico.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -23,16 +24,15 @@ public class SaldoUsuarioPrograma {
     private Integer pontos;
 
     @OneToMany(mappedBy = "saldo", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<CartaoUsuario> cartao;
-
-    @OneToMany(mappedBy = "saldo", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<MovimentacaoPontos> movimentacao;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "id_usuario", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_usuario")
+    @JsonIgnore
     private Usuario usuario;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "id_programa", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_programa")
+    @JsonIgnore
     private ProgramaFidelidade programa;
 }

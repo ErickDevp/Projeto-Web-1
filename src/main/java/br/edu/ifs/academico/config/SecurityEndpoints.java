@@ -6,7 +6,7 @@ public class SecurityEndpoints {
 
     public static final String[] ADMIN_WRITE = {
             "/promocoes/**",
-            "/programas-fidelidade/**",
+            "/programas/**",
             "/notificacoes/**"
     };
 }

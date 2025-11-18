@@ -1,7 +1,7 @@
 package br.edu.ifs.academico.DTO;
 
 public record SaldoUsuarioProgramaDTO(
-        Long usuarioId,
+        Long programaId,
         Integer pontos
 ) {
 }

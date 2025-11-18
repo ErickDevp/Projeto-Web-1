@@ -1,5 +1,6 @@
 package br.edu.ifs.academico.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -22,7 +23,8 @@ public class Comprovante {
     private String tipo_arq;
     private Long tamanho_bytes;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false) // Indica um relacionamento muitos para um (muitos pedidos para um cliente)
-    @JoinColumn(name = "id_movimentacao", nullable = false) // Especifica o nome da coluna da chave estrangeira no banco de dados
+    @ManyToOne(fetch = FetchType.LAZY) // Indica um relacionamento muitos para um (muitos pedidos para um cliente)
+    @JoinColumn(name = "id_movimentacao") // Especifica o nome da coluna da chave estrangeira no banco de dados
+    @JsonIgnore
     private MovimentacaoPontos movimentacao; // Objeto que representa a entidade relacionada
 }
