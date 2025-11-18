@@ -2,14 +2,10 @@ package br.edu.ifs.academico.service;
 
 import br.edu.ifs.academico.DTO.NotificacaoDTO;
 import br.edu.ifs.academico.entity.Notificacao;
-import br.edu.ifs.academico.entity.Usuario;
-import br.edu.ifs.academico.entity.enums.Role;
 import br.edu.ifs.academico.repository.NotificacaoRepository;
-import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
-
-import java.util.Optional;
+import java.util.List;
 
 @Service
 public class NotificacaoService {
@@ -20,15 +16,13 @@ public class NotificacaoService {
         this.notificacaoRepository = notificacaoRepository;
     }
 
-    public Optional<Notificacao> buscarNotificacaoPorId(Long id) {
-        return notificacaoRepository.findById(id);
+    @PreAuthorize("hasAnyRole('ADMIN')")
+    public List<Notificacao> buscarNotificacoes() {
+        return notificacaoRepository.findAll();
     }
 
-    public Long salvarNotificacao(NotificacaoDTO notificacaoDTO, Usuario usuarioLogado) {
-        if (usuarioLogado.getRole() != Role.ADMIN) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Somente administradores podem criar notificações.");
-        }
-
+    @PreAuthorize("hasAnyRole('ADMIN')")
+    public Long criarNotificacao(NotificacaoDTO notificacaoDTO) {
         Notificacao entity = Notificacao.builder()
                 .titulo(notificacaoDTO.titulo())
                 .mensagem(notificacaoDTO.mensagem())
@@ -38,7 +32,8 @@ public class NotificacaoService {
         return notificacaoRepository.save(entity).getId();
     }
 
-    public void atualizarNotificacao(Long id, NotificacaoDTO notificacaoDTO) {
+    @PreAuthorize("hasAnyRole('ADMIN')")
+    public void atualizarNotificacao( NotificacaoDTO notificacaoDTO, Long id) {
         var notificacao = notificacaoRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("notificação não encontrado"));
 
@@ -49,12 +44,11 @@ public class NotificacaoService {
         notificacaoRepository.save(notificacao);
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN')")
     public void apagarNotificacao(Long id) {
         if(!notificacaoRepository.existsById(id)) {
             throw new RuntimeException("notificação não encontrado");
         }
         notificacaoRepository.deleteById(id);
     }
-    
-
 }

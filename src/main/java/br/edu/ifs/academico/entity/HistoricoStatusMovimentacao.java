@@ -1,6 +1,7 @@
 package br.edu.ifs.academico.entity;
 
 import br.edu.ifs.academico.entity.enums.StatusMovimentacao;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -22,7 +23,8 @@ public class HistoricoStatusMovimentacao {
     private StatusMovimentacao status;
     private String motivo;
 
-    @OneToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "id_movimentacao", nullable = false)
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_movimentacao")
+    @JsonIgnore
     private MovimentacaoPontos movimentacao;
 }

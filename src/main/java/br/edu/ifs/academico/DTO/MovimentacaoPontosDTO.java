@@ -1,11 +1,13 @@
 package br.edu.ifs.academico.DTO;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 
 public record MovimentacaoPontosDTO(
-        Long usuarioId,
+        Long saldoId,
+        Long cartaoId,
         BigDecimal valor,
         Integer pontos_calculados,
-        String status
+        LocalDate data_ocorrencia
 ) {
 }

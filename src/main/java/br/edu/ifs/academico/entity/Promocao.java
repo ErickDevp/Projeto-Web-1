@@ -1,5 +1,6 @@
 package br.edu.ifs.academico.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -26,7 +27,8 @@ public class Promocao {
     private LocalDate data_fim;
     private Boolean ativo;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "id_programa", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_programa")
+    @JsonIgnore
     private ProgramaFidelidade programa;
 }

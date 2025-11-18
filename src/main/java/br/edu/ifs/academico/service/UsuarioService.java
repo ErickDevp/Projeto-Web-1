@@ -4,6 +4,7 @@ import br.edu.ifs.academico.DTO.UsuarioDTO;
 import br.edu.ifs.academico.entity.Usuario;
 import br.edu.ifs.academico.repository.UsuarioRepository;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -16,6 +17,7 @@ public class UsuarioService {
         this.usuarioRepository = usuarioRepository;
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     public UsuarioDTO buscarUsuario(String email) {
         Usuario usuario = usuarioRepository.findByEmail(email)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuário não encontrado"));
@@ -28,6 +30,7 @@ public class UsuarioService {
         );
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     public void atualizarUsuario(UsuarioDTO usuarioDTO, String emailLogado) {
         var usuario = usuarioRepository.findByEmail(emailLogado)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuário não encontrado"));
@@ -38,6 +41,7 @@ public class UsuarioService {
         usuarioRepository.save(usuario);
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     public void apagarUsuario(String emailLogado) {
         var usuario = usuarioRepository.findByEmail(emailLogado)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuário não encontrado"));

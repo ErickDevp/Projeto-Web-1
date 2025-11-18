@@ -2,61 +2,84 @@ package br.edu.ifs.academico.service;
 
 import br.edu.ifs.academico.DTO.SaldoUsuarioProgramaDTO;
 import br.edu.ifs.academico.entity.SaldoUsuarioPrograma;
+import br.edu.ifs.academico.repository.ProgramaFidelidadeRepository;
 import br.edu.ifs.academico.repository.SaldoUsuarioProgramaRepository;
 import br.edu.ifs.academico.repository.UsuarioRepository;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class SaldoUsuarioProgramaService {
 
     private final SaldoUsuarioProgramaRepository saldoRepository;
     private final UsuarioRepository usuarioRepository;
+    private final ProgramaFidelidadeRepository programaRepository;
 
-    public SaldoUsuarioProgramaService(SaldoUsuarioProgramaRepository saldoRepository, UsuarioRepository usuarioRepository) {
+    public SaldoUsuarioProgramaService(SaldoUsuarioProgramaRepository saldoRepository, UsuarioRepository usuarioRepository, ProgramaFidelidadeRepository programaRepository) {
         this.saldoRepository = saldoRepository;
         this.usuarioRepository = usuarioRepository;
+        this.programaRepository = programaRepository;
     }
 
-    public List<SaldoUsuarioPrograma> buscarSaldosUsuario() {
-        return saldoRepository.findAll();
-    }
-
-    public Optional<SaldoUsuarioPrograma> buscarSaldoPorId(Long id) {
-        return saldoRepository.findById(id);
-    }
-
-    public Long salvarSaldoUsuario(SaldoUsuarioProgramaDTO saldoDTO) {
-        var usuario = usuarioRepository.findById(saldoDTO.usuarioId())
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
+    public List<SaldoUsuarioPrograma> buscarTodosSaldosUsuario(String emailLogado) {
+        var usuario = usuarioRepository.findByEmail(emailLogado)
                 .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
 
-        SaldoUsuarioPrograma entity = SaldoUsuarioPrograma.builder()
-                .pontos(saldoDTO.pontos())
-                .usuario(usuario)
-                .build();
-
-        var saldoSalvo = saldoRepository.save(entity);
-
-        return saldoSalvo.getId();
+        return saldoRepository.findByUsuarioId(usuario.getId());
     }
 
-    public void atualizarSaldo(SaldoUsuarioProgramaDTO saldoDTO, Long id) {
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
+    public Long criarSaldoUsuario(SaldoUsuarioProgramaDTO saldoDTO, String emailLogado) {
+        var usuario = usuarioRepository.findByEmail(emailLogado)
+                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+
+        var programa = programaRepository.findById(saldoDTO.programaId())
+                .orElseThrow(() -> new RuntimeException("programaFidelidade não encontrada"));
+
+        SaldoUsuarioPrograma entity = SaldoUsuarioPrograma.builder()
+                .usuario(usuario)
+                .programa(programa)
+                .pontos(saldoDTO.pontos())
+                .build();
+
+        return saldoRepository.save(entity).getId();
+    }
+
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
+    public void atualizarSaldo(SaldoUsuarioProgramaDTO saldoDTO, Long id, String username) {
         var saldo = saldoRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Saldo Programa não encontrado"));
 
+        if (!saldo.getUsuario().getEmail().equals(username)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Não autorizado");
+        }
+
         if(saldoDTO.pontos() != null) { saldo.setPontos(saldoDTO.pontos()); }
+        if(saldoDTO.programaId() != null && programaRepository.existsById(saldoDTO.programaId())) {
+            var programa = programaRepository.findById(saldoDTO.programaId())
+                    .orElseThrow(() -> new RuntimeException("programaFidelidade não encontrada"));
+
+            saldo.setPrograma(programa);
+        }
 
         saldoRepository.save(saldo);
     }
 
-    public void apagarSaldo(Long id) {
-        if(!saldoRepository.existsById(id)) {
-            throw new RuntimeException("Saldo Programa não encontrado");
-        }
-        saldoRepository.deleteById(id);
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
+    public void apagarSaldo(Long id, String username) {
+        var saldo = saldoRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Cartão não encontrado"));
 
+        if (!saldo.getUsuario().getEmail().equals(username)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Não autorizado");
+        }
+
+        saldoRepository.deleteById(id);
     }
 
 

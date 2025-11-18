@@ -32,7 +32,7 @@ public class MyUserDetailsService implements UserDetailsService {
                 .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado"));
 
         List<GrantedAuthority> authorities = List.of(
-                new SimpleGrantedAuthority(usuario.getRole().name())
+                new SimpleGrantedAuthority("ROLE_" + usuario.getRole().name())
         );
 
         return new org.springframework.security.core.userdetails.User(

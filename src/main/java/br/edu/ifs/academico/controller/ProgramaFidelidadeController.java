@@ -1,0 +1,46 @@
+package br.edu.ifs.academico.controller;
+
+import br.edu.ifs.academico.DTO.ProgramaFidelidadeDTO;
+import br.edu.ifs.academico.entity.ProgramaFidelidade;
+import br.edu.ifs.academico.service.ProgramaFidelidadeService;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/programas")
+public class ProgramaFidelidadeController {
+
+    private final ProgramaFidelidadeService programaService;
+
+    public ProgramaFidelidadeController(ProgramaFidelidadeService programaService) {
+        this.programaService = programaService;
+    }
+
+    @GetMapping
+    public ResponseEntity<List<ProgramaFidelidade>> buscarProgramasFidelidade() {
+        return ResponseEntity.ok(programaService.buscarProgramas());
+    }
+
+    // Criar um novo cartão vinculado ao usuário
+    @PostMapping("/criar")
+    public ResponseEntity<String> criarPrograma(@RequestBody ProgramaFidelidadeDTO programaDTO) {
+        programaService.criarPrograma(programaDTO);
+        return ResponseEntity.ok("Operação realizada");
+    }
+
+    // Atualizar um cartão existente
+    @PutMapping("/{id}")
+    public ResponseEntity<Void> atualizarPrograma(@PathVariable Long id, @RequestBody ProgramaFidelidadeDTO programaDTO) {
+        programaService.atualizarPrograma(programaDTO, id);
+        return ResponseEntity.noContent().build();
+    }
+
+    // Apagar um cartão
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> apagarPrograma(@PathVariable Long id) {
+        programaService.apagarPrograma(id);
+        return ResponseEntity.noContent().build();
+    }
+}

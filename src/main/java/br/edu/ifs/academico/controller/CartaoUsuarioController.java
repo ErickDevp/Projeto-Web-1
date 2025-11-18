@@ -4,6 +4,8 @@ import br.edu.ifs.academico.DTO.CartaoUsuarioDTO;
 import br.edu.ifs.academico.entity.CartaoUsuario;
 import br.edu.ifs.academico.service.CartaoUsuarioService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -18,31 +20,35 @@ public class CartaoUsuarioController {
         this.cartaoService = cartaoService;
     }
 
-    // 🔹 Buscar todos os cartões de um usuário
-    @GetMapping("/usuario/{id}")
-    public ResponseEntity<List<CartaoUsuario>> buscarPorUsuario(@PathVariable Long id) {
-        var cartoes = cartaoService.buscarPorUsuario(id);
-        return ResponseEntity.ok(cartoes);
+    // Buscar todos os cartões de um usuário
+    @GetMapping
+    public ResponseEntity<List<CartaoUsuario>> buscarMeusCartoes(
+            @AuthenticationPrincipal UserDetails userDetails
+    ) {
+        return ResponseEntity.ok(cartaoService.buscarTodosCartoes(userDetails.getUsername()));
     }
 
-    // 🔹 Criar um novo cartão vinculado ao usuário
-    @PostMapping
-    public ResponseEntity<Long> criarCartao(@RequestBody CartaoUsuarioDTO cartaoDTO) {
-        var id = cartaoService.salvarCartao(cartaoDTO);
-        return ResponseEntity.ok(id);
+    // Criar um novo cartão vinculado ao usuário
+    @PostMapping("/criar")
+    public ResponseEntity<String> criarCartao(@AuthenticationPrincipal UserDetails userDetails,
+                                            @RequestBody CartaoUsuarioDTO cartaoDTO) {
+        cartaoService.criarCartao(cartaoDTO, userDetails.getUsername());
+        return ResponseEntity.ok("Operação realizada");
     }
 
-    // 🔹 Atualizar um cartão existente
+    // Atualizar um cartão existente
     @PutMapping("/{id}")
-    public ResponseEntity<Void> atualizarCartao(@PathVariable Long id, @RequestBody CartaoUsuarioDTO cartaoDTO) {
-        cartaoService.atualizarCartao(cartaoDTO, id);
+    public ResponseEntity<Void> atualizarCartao(@AuthenticationPrincipal UserDetails userDetails,
+                                                @PathVariable Long id, @RequestBody CartaoUsuarioDTO cartaoDTO) {
+        cartaoService.atualizarCartao(cartaoDTO, id,userDetails.getUsername());
         return ResponseEntity.noContent().build();
     }
 
-    // 🔹 Apagar um cartão
+    // Apagar um cartão
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> apagarCartao(@PathVariable Long id) {
-        cartaoService.apagarCartao(id);
+    public ResponseEntity<Void> apagarCartao(@AuthenticationPrincipal UserDetails userDetails,
+                                             @PathVariable Long id) {
+        cartaoService.apagarCartao(id, userDetails.getUsername());
         return ResponseEntity.noContent().build();
     }
 }
