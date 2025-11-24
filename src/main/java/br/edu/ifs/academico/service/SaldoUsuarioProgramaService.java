@@ -33,23 +33,7 @@ public class SaldoUsuarioProgramaService {
         return saldoRepository.findByUsuarioId(usuario.getId());
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
-    public Long criarSaldoUsuario(SaldoUsuarioProgramaDTO saldoDTO, String emailLogado) {
-        var usuario = usuarioRepository.findByEmail(emailLogado)
-                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
-
-        var programa = programaRepository.findById(saldoDTO.programaId())
-                .orElseThrow(() -> new RuntimeException("programaFidelidade não encontrada"));
-
-        SaldoUsuarioPrograma entity = SaldoUsuarioPrograma.builder()
-                .usuario(usuario)
-                .programa(programa)
-                .pontos(saldoDTO.pontos())
-                .build();
-
-        return saldoRepository.save(entity).getId();
-    }
-
+    /*
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     public void atualizarSaldo(SaldoUsuarioProgramaDTO saldoDTO, Long id, String username) {
         var saldo = saldoRepository.findById(id)
@@ -81,6 +65,6 @@ public class SaldoUsuarioProgramaService {
 
         saldoRepository.deleteById(id);
     }
-
+     */
 
 }

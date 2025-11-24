@@ -36,14 +36,14 @@ public class MovimentacaoPontosController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Void> atualizarMovimentacao(@RequestBody MovimentacaoPontosDTO movimentacaoDTO, @PathVariable Long id) {
-        movimentacaoService.atualizarMovimentacao(movimentacaoDTO, id);
+    public ResponseEntity<Void> atualizarMovimentacao(@RequestBody MovimentacaoPontosDTO movimentacaoDTO, @PathVariable Long id, @AuthenticationPrincipal UserDetails userDetails) {
+        movimentacaoService.atualizarMovimentacao(movimentacaoDTO, id, userDetails.getUsername());
         return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> apagarMovimentacao(@PathVariable Long id) {
-        movimentacaoService.apagarMovimentacao(id);
+    public ResponseEntity<Void> apagarMovimentacao(@PathVariable Long id, @AuthenticationPrincipal UserDetails userDetails) {
+        movimentacaoService.apagarMovimentacao(id, userDetails.getUsername());
         return ResponseEntity.noContent().build();
     }
 

@@ -9,4 +9,5 @@ import java.util.List;
 @Repository
 public interface ComprovanteRepository extends JpaRepository<Comprovante, Long> {
     List<Comprovante> findByMovimentacaoId(Long id);
+
 }

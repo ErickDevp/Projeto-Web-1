@@ -23,7 +23,7 @@ public class HistoricoStatusMovimentacao {
     private StatusMovimentacao status;
     private String motivo;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "id_movimentacao")
     @JsonIgnore
     private MovimentacaoPontos movimentacao;
