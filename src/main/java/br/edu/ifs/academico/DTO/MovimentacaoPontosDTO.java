@@ -7,7 +7,6 @@ public record MovimentacaoPontosDTO(
         Long saldoId,
         Long cartaoId,
         BigDecimal valor,
-        Integer pontos_calculados,
         LocalDate data_ocorrencia
 ) {
 }

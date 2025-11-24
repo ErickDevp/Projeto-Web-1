@@ -1,6 +1,7 @@
 package br.edu.ifs.academico.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -18,6 +19,7 @@ import java.util.Set;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class ProgramaFidelidade {
 
     @Id
@@ -43,11 +45,4 @@ public class ProgramaFidelidade {
 
     @OneToMany(mappedBy = "programa", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Promocao> promocoes;
-
-    @OneToMany(mappedBy = "programa", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<SaldoUsuarioPrograma> saldo;
-
-    @ManyToMany(mappedBy = "programas", fetch = FetchType.LAZY)
-    @JsonIgnore
-    private Set<CartaoUsuario> cartoes = new HashSet<>();
 }

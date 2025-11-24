@@ -22,17 +22,20 @@ public class ComprovanteService {
 
     // busco todos os comprovantes de determinada movimentacao
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
-    public List<Comprovante> buscarComprovantePorId(Long movimentacaoId) {
-        var movimentacao = movimentacaoRepository.findById(movimentacaoId)
-                .orElseThrow(() -> new RuntimeException("movimentacão não encontrado"));
+    public List<Comprovante> buscarComprovantePorId(Long movimentacaoId, String emailLogado) {
+        var movimentacao = movimentacaoRepository
+                .findByIdAndUsuarioEmail(movimentacaoId, emailLogado)
+                .orElseThrow(() -> new RuntimeException("Movimentação não encontrada para este usuário"));
 
         return comprovanteRepository.findByMovimentacaoId(movimentacao.getId());
     }
 
+
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
-    public Long criarComprovante(ComprovanteDTO comprovanteDTO) {
-        var movimentacao = movimentacaoRepository.findById(comprovanteDTO.movimentacaoId())
-                .orElseThrow(() -> new RuntimeException("movimentacão não encontrada"));
+    public Long criarComprovante(ComprovanteDTO comprovanteDTO, String emailLogado) {
+        var movimentacao = movimentacaoRepository
+                .findByIdAndUsuarioEmail(comprovanteDTO.movimentacaoId(), emailLogado)
+                .orElseThrow(() -> new RuntimeException("Movimentação não encontrada para este usuário"));
 
         Comprovante entity = Comprovante.builder()
                 .movimentacao(movimentacao)
@@ -45,29 +48,42 @@ public class ComprovanteService {
     }
 
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
-    public void atualizarComprovante(ComprovanteDTO comprovanteDTO, Long id) {
+    public void atualizarComprovante(ComprovanteDTO dto, Long id, String emailLogado) {
+
         var comprovante = comprovanteRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Comprovante não encontrado"));
 
-        if(comprovanteDTO.caminho() != null ) { comprovante.setCaminho(comprovanteDTO.caminho()); }
-        if(comprovanteDTO.tipo_arq() != null) { comprovante.setTipo_arq(comprovanteDTO.tipo_arq()); }
-        if(comprovanteDTO.tamanho_bytes() != null) { comprovante.setTamanho_bytes(comprovanteDTO.tamanho_bytes()); }
-        if(comprovanteDTO.movimentacaoId() != null && movimentacaoRepository.existsById(comprovanteDTO.movimentacaoId())) {
-            var movimentacao = movimentacaoRepository.findById(comprovanteDTO.movimentacaoId())
-                    .orElseThrow(() -> new RuntimeException("movimentacão não encontrada"));
-
-            comprovante.setMovimentacao(movimentacao);
+        if (!comprovante.getMovimentacao().getUsuario().getEmail().equals(emailLogado)) {
+            throw new RuntimeException("Você não pode alterar comprovante de outro usuário");
         }
 
+        if (dto.caminho() != null) comprovante.setCaminho(dto.caminho());
+        if (dto.tipo_arq() != null) comprovante.setTipo_arq(dto.tipo_arq());
+        if (dto.tamanho_bytes() != null) comprovante.setTamanho_bytes(dto.tamanho_bytes());
+
+        // Se mover o comprovante para outra movimentação, validar também
+        if (dto.movimentacaoId() != null) {
+            var novaMov = movimentacaoRepository
+                    .findByIdAndUsuarioEmail(dto.movimentacaoId(), emailLogado)
+                    .orElseThrow(() -> new RuntimeException("Movimentação não pertence ao usuário"));
+
+            comprovante.setMovimentacao(novaMov);
+        }
 
         comprovanteRepository.save(comprovante);
     }
 
+
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
-    public void apagarComprovante(Long id) {
-        if(!comprovanteRepository.existsById(id)) {
-            throw new RuntimeException("Comprovante não encontrado");
+    public void apagarComprovante(Long id, String emailLogado) {
+
+        var comprovante = comprovanteRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Comprovante não encontrado"));
+
+        if (!comprovante.getMovimentacao().getUsuario().getEmail().equals(emailLogado)) {
+            throw new RuntimeException("Você não pode apagar comprovante de outro usuário");
         }
+
         comprovanteRepository.deleteById(id);
     }
 }

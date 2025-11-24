@@ -44,11 +44,7 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers( "/cartoes/**","/auth/**").permitAll()
-                        .requestMatchers(HttpMethod.PUT, "/usuarios/**").authenticated()
-                        .requestMatchers(HttpMethod.DELETE, "/usuarios/**").authenticated()
-
-                        .requestMatchers(HttpMethod.POST, SecurityEndpoints.ADMIN_WRITE).hasAuthority("ROLE_ADMIN")
+                        .requestMatchers( "/auth/**").permitAll()
                         .requestMatchers(HttpMethod.PUT,  SecurityEndpoints.ADMIN_WRITE).hasAuthority("ROLE_ADMIN")
                         .requestMatchers(HttpMethod.DELETE, SecurityEndpoints.ADMIN_WRITE).hasAuthority("ROLE_ADMIN")
                         .anyRequest().authenticated()

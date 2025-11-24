@@ -33,6 +33,5 @@ public class SaldoUsuarioPrograma {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_programa")
-    @JsonIgnore
     private ProgramaFidelidade programa;
 }

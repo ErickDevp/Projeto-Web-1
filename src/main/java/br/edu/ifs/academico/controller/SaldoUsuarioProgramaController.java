@@ -25,7 +25,7 @@ public class SaldoUsuarioProgramaController {
         return ResponseEntity.ok(SaldoService.buscarTodosSaldosUsuario(userDetails.getUsername()));
     }
 
-    // Provavelmente nao terar como criar, acredito que ao criar um cartao com determinado programa o saldo é criado
+    /* Provavelmente nao terar como criar, acredito que ao criar um cartao com determinado programa o saldo é criado
     @PostMapping("/criar")
     public ResponseEntity<String> criarSaldoUsuario(@AuthenticationPrincipal UserDetails userDetails,
                                               @RequestBody SaldoUsuarioProgramaDTO saldoDTO) {
@@ -46,4 +46,6 @@ public class SaldoUsuarioProgramaController {
         SaldoService.apagarSaldo(id, userDetails.getUsername());
         return ResponseEntity.noContent().build();
     }
+
+     */
 }
