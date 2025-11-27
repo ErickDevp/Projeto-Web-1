@@ -44,11 +44,10 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers( "/auth/**").permitAll()
-                        .requestMatchers(HttpMethod.PUT,  SecurityEndpoints.ADMIN_WRITE).hasAuthority("ROLE_ADMIN")
+                        .requestMatchers("/auth/**").permitAll()
+                        .requestMatchers(HttpMethod.PUT, SecurityEndpoints.ADMIN_WRITE).hasAuthority("ROLE_ADMIN")
                         .requestMatchers(HttpMethod.DELETE, SecurityEndpoints.ADMIN_WRITE).hasAuthority("ROLE_ADMIN")
-                        .anyRequest().authenticated()
-                )
+                        .anyRequest().authenticated())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .userDetailsService(userDetailsService); // registra seu UserDetailsService
 
@@ -57,5 +56,3 @@ public class SecurityConfig {
         return http.build();
     }
 }
-
-

@@ -1,6 +1,7 @@
 package br.edu.ifs.academico.service;
 
 import br.edu.ifs.academico.DTO.UsuarioDTO;
+import br.edu.ifs.academico.entity.PasswordResetToken;
 import br.edu.ifs.academico.entity.Usuario;
 import br.edu.ifs.academico.entity.enums.Role;
 import br.edu.ifs.academico.repository.UsuarioRepository;
@@ -14,8 +15,10 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
-
+import br.edu.ifs.academico.repository.PasswordResetTokenRepository;
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 public class AuthService {
@@ -24,12 +27,16 @@ public class AuthService {
     private final JwtService jwtService;
     private final BCryptPasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
+    private final PasswordResetTokenRepository tokenRepository;
 
-    public AuthService(UsuarioRepository usuarioRepository, JwtService jwtService, BCryptPasswordEncoder passwordEncoder, AuthenticationManager authenticationManager) {
+    public AuthService(UsuarioRepository usuarioRepository, JwtService jwtService,
+            BCryptPasswordEncoder passwordEncoder, AuthenticationManager authenticationManager,
+            PasswordResetTokenRepository tokenRepository) {
         this.usuarioRepository = usuarioRepository;
         this.jwtService = jwtService;
         this.passwordEncoder = passwordEncoder;
         this.authenticationManager = authenticationManager;
+        this.tokenRepository = tokenRepository;
     }
 
     // Verifica se email já existe
@@ -56,8 +63,7 @@ public class AuthService {
         UserDetails userDetails = new org.springframework.security.core.userdetails.User(
                 saved.getEmail(),
                 saved.getSenha(),
-                List.of(new SimpleGrantedAuthority("ROLE_" + saved.getRole().name()))
-        );
+                List.of(new SimpleGrantedAuthority("ROLE_" + saved.getRole().name())));
 
         return jwtService.generateToken(userDetails);
     }
@@ -66,8 +72,7 @@ public class AuthService {
     public String login(String email, String senha) {
         try {
             Authentication authentication = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(email, senha)
-            );
+                    new UsernamePasswordAuthenticationToken(email, senha));
 
             UserDetails userDetails = (UserDetails) authentication.getPrincipal();
             return jwtService.generateToken(userDetails);
@@ -77,4 +82,40 @@ public class AuthService {
         }
     }
 
+    // 1. Gera o token e o retorna (para ser exibido na API)
+    public String solicitarRedefinicaoSenha(String email) {
+        Usuario usuario = usuarioRepository.findByEmail(email)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuário não encontrado"));
+
+        // Se já existir um token antigo para esse usuário, apaga para gerar um novo
+        tokenRepository.findByUsuario(usuario).ifPresent(tokenRepository::delete);
+
+        String token = UUID.randomUUID().toString();
+
+        PasswordResetToken resetToken = PasswordResetToken.builder()
+                .token(token)
+                .usuario(usuario)
+                .expiryDate(LocalDateTime.now().plusMinutes(30))
+                .build();
+
+        tokenRepository.save(resetToken);
+
+        // AQUI: Retornamos o token para o Controller devolver no JSON
+        return token;
+    }
+
+    // 2. Recebe o token e a nova senha para efetivar a troca
+    public void redefinirSenha(String token, String novaSenha) {
+        PasswordResetToken resetToken = tokenRepository.findByToken(token)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Token inválido"));
+
+        if (resetToken.isExpired()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Token expirado. Solicite um novo.");
+        }
+
+        Usuario usuario = resetToken.getUsuario();
+        usuario.setSenha(passwordEncoder.encode(novaSenha)); // Criptografa a nova senha
+        usuarioRepository.save(usuario);
+        tokenRepository.delete(resetToken);
+    }
 }
