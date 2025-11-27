@@ -48,5 +48,4 @@ public class Usuario {
     @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<SaldoUsuarioPrograma> saldo;
 
-
 }
