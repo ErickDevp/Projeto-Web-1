@@ -16,6 +16,8 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;
 
+import static java.util.spi.ToolProvider.findFirst;
+
 @Service
 public class MovimentacaoPontosService {
 
@@ -53,11 +55,11 @@ public class MovimentacaoPontosService {
                     "Você não tem permissão para registrar movimentações neste cartão");
         }
 
-        // Corrigir
         var programa = cartao.getProgramas()
                 .stream()
+                .filter(p -> p.getId().equals(dto.programaId()))
                 .findFirst()
-                .orElseThrow(() -> new RuntimeException("Cartão não possui programa"));
+                .orElseThrow(() -> new RuntimeException("Programa não encontrado nesse cartão"));
 
         var saldo = saldoRepository.findByUsuarioIdAndProgramaId(usuario.getId(), programa.getId())
                 .orElseGet(() -> {
@@ -138,6 +140,9 @@ public class MovimentacaoPontosService {
         if (!movimentacao.getUsuario().getEmail().equals(username)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Não autorizado");
         }
+
+        var saldo = movimentacao.getSaldo();
+        saldo.setPontos(saldo.getPontos() - movimentacao.getPontos_calculados());
 
         movimentacaoRepository.deleteById(id);
     }

@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/movimentacoes")
+@RequestMapping("/movimentacao")
 public class MovimentacaoPontosController {
 
     private final MovimentacaoPontosService movimentacaoService;

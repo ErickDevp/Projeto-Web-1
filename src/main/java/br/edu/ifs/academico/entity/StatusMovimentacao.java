@@ -1,6 +1,5 @@
 package br.edu.ifs.academico.entity;
 
-import br.edu.ifs.academico.entity.enums.StatusMovimentacao;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -14,16 +13,16 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class HistoricoStatusMovimentacao {
+public class StatusMovimentacao {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_historico")
     private Long id;
 
-    private StatusMovimentacao status;
+    private br.edu.ifs.academico.entity.enums.StatusMovimentacao status;
     private String motivo;
 
-    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_movimentacao")
     @JsonIgnore
     private MovimentacaoPontos movimentacao;

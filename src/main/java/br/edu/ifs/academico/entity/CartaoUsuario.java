@@ -52,7 +52,7 @@ public class CartaoUsuario {
         return Objects.hash(id);
     }
 
-    @OneToMany(mappedBy = "cartao", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "cartao", orphanRemoval = true)
     private List<MovimentacaoPontos> movimentacao;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)

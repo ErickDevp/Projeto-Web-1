@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/programas")
+@RequestMapping("/programa")
 public class ProgramaFidelidadeController {
 
     private final ProgramaFidelidadeService programaService;
