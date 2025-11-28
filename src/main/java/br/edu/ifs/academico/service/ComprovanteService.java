@@ -4,10 +4,17 @@ import br.edu.ifs.academico.DTO.ComprovanteDTO;
 import br.edu.ifs.academico.entity.Comprovante;
 import br.edu.ifs.academico.repository.ComprovanteRepository;
 import br.edu.ifs.academico.repository.MovimentacaoPontosRepository;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 public class ComprovanteService {
@@ -20,6 +27,9 @@ public class ComprovanteService {
         this.movimentacaoRepository = movimentacaoRepository;
     }
 
+    @Value("${comprovante.storage.path:uploads/comprovantes}")
+    private String storagePath;
+
     // busco todos os comprovantes de determinada movimentacao
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     public List<Comprovante> buscarComprovantePorId(Long movimentacaoId, String emailLogado) {
@@ -30,21 +40,51 @@ public class ComprovanteService {
         return comprovanteRepository.findByMovimentacaoId(movimentacao.getId());
     }
 
-
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
-    public Long criarComprovante(ComprovanteDTO comprovanteDTO, String emailLogado) {
+    public Long criarComprovante(Long movimentacaoId, MultipartFile file, String emailLogado) {
         var movimentacao = movimentacaoRepository
-                .findByIdAndUsuarioEmail(comprovanteDTO.movimentacaoId(), emailLogado)
+                .findByIdAndUsuarioEmail(movimentacaoId, emailLogado)
                 .orElseThrow(() -> new RuntimeException("Movimentação não encontrada para este usuário"));
 
-        Comprovante entity = Comprovante.builder()
-                .movimentacao(movimentacao)
-                .caminho(comprovanteDTO.caminho())
-                .tipo_arq(comprovanteDTO.tipo_arq())
-                .tamanho_bytes(comprovanteDTO.tamanho_bytes())
-                .build();
+        if (file == null || file.isEmpty()) {
+            throw new RuntimeException("Arquivo vazio");
+        }
 
-        return comprovanteRepository.save(entity).getId();
+        String contentType = file.getContentType();
+        if (contentType == null ||
+                !(contentType.equals("image/png") || contentType.equals("image/jpeg") || contentType.equals("application/pdf"))) {
+            throw new RuntimeException("Tipo de arquivo não suportado. Aceito: png, jpg, pdf");
+        }
+
+        try {
+            Path base = Paths.get(storagePath).toAbsolutePath().normalize();
+            Files.createDirectories(base);
+
+            String original = file.getOriginalFilename();
+            String ext = "";
+            if (original != null && original.contains(".")) {
+                ext = original.substring(original.lastIndexOf('.'));
+            } else if (contentType.equals("image/png")) ext = ".png";
+            else if (contentType.equals("image/jpeg")) ext = ".jpg";
+            else if (contentType.equals("application/pdf")) ext = ".pdf";
+
+            String filename = UUID.randomUUID().toString() + ext;
+            Path target = base.resolve(filename);
+
+            Files.copy(file.getInputStream(), target);
+
+            Comprovante entity = Comprovante.builder()
+                    .movimentacao(movimentacao)
+                    .caminho(target.toString())
+                    .tipo_arq(contentType)
+                    .tamanho_bytes(file.getSize())
+                    .build();
+
+            return comprovanteRepository.save(entity).getId();
+
+        } catch (IOException e) {
+            throw new RuntimeException("Erro ao salvar arquivo: " + e.getMessage(), e);
+        }
     }
 
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
