@@ -23,21 +23,18 @@ public class ProgramaFidelidadeController {
         return ResponseEntity.ok(programaService.buscarProgramas());
     }
 
-    // Criar um novo cartão vinculado ao usuário
     @PostMapping("/criar")
     public ResponseEntity<String> criarPrograma(@RequestBody ProgramaFidelidadeDTO programaDTO) {
         programaService.criarPrograma(programaDTO);
         return ResponseEntity.ok("Operação realizada");
     }
 
-    // Atualizar um cartão existente
     @PutMapping("/{id}")
     public ResponseEntity<Void> atualizarPrograma(@PathVariable Long id, @RequestBody ProgramaFidelidadeDTO programaDTO) {
         programaService.atualizarPrograma(programaDTO, id);
         return ResponseEntity.noContent().build();
     }
 
-    // Apagar um cartão
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> apagarPrograma(@PathVariable Long id) {
         programaService.apagarPrograma(id);

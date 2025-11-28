@@ -45,7 +45,7 @@ public class CartaoUsuarioService {
         // Buscar todos os programas pelo IDs recebidos no DTO
         Set<ProgramaFidelidade> programas = cartaoDTO.programaIds().stream()
                 .map(id -> programaRepository.findById(id)
-                        .orElseThrow(() -> new RuntimeException("ProgramaFidelidade não encontrado: " + id)))
+                        .orElseThrow(() -> new RuntimeException("Programa Fidelidade não encontrado: " + id)))
                 .collect(Collectors.toSet());
 
         var entity = CartaoUsuario.builder()
@@ -73,6 +73,14 @@ public class CartaoUsuarioService {
         if (cartaoDTO.bandeira() != null) cartao.setBandeira(cartaoDTO.bandeira());
         if (cartaoDTO.tipo() != null) cartao.setTipo(cartaoDTO.tipo());
         if (cartaoDTO.pontos() != null) cartao.setPontos(cartaoDTO.pontos());
+        if (cartaoDTO.programaIds() != null) {
+            Set<ProgramaFidelidade> programas = cartaoDTO.programaIds().stream()
+                    .map(idPrograma -> programaRepository.findById(idPrograma)
+                            .orElseThrow(() -> new RuntimeException("Programa Fidelidade não encontrado: " + idPrograma)))
+                    .collect(Collectors.toSet());
+
+            cartao.setProgramas(programas);
+        }
 
         cartaoRepository.save(cartao);
     }
