@@ -4,8 +4,8 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 
 public record MovimentacaoPontosDTO(
-        Long saldoId,
         Long cartaoId,
+        Long programaId, // id do programa
         BigDecimal valor,
         LocalDate data_ocorrencia
 ) {

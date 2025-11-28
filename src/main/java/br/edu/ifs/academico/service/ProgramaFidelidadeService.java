@@ -3,7 +3,6 @@ package br.edu.ifs.academico.service;
 import br.edu.ifs.academico.DTO.ProgramaFidelidadeDTO;
 import br.edu.ifs.academico.entity.ProgramaFidelidade;
 import br.edu.ifs.academico.repository.ProgramaFidelidadeRepository;
-import br.edu.ifs.academico.repository.UsuarioRepository;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import java.util.List;
@@ -12,11 +11,9 @@ import java.util.List;
 public class ProgramaFidelidadeService {
 
     private final ProgramaFidelidadeRepository programaRepository;
-    private final UsuarioRepository usuarioRepository;
 
-    public ProgramaFidelidadeService(ProgramaFidelidadeRepository programaRepository, UsuarioRepository usuarioRepository) {
+    public ProgramaFidelidadeService(ProgramaFidelidadeRepository programaRepository) {
         this.programaRepository = programaRepository;
-        this.usuarioRepository = usuarioRepository;
     }
 
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")

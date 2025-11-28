@@ -59,7 +59,7 @@ public class AuthService {
 
         Usuario saved = usuarioRepository.save(entity);
 
-        // Cria o UserDetails manualmente (sem fazer SELECT)
+        // sem fazer SELECT
         UserDetails userDetails = new org.springframework.security.core.userdetails.User(
                 saved.getEmail(),
                 saved.getSenha(),

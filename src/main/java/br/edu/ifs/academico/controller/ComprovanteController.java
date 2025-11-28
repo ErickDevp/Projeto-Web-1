@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/comprovantes")
+@RequestMapping("/comprovante")
 public class ComprovanteController {
 
     private final ComprovanteService comprovanteService;
