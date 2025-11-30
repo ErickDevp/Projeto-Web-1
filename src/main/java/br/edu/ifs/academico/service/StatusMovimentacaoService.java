@@ -4,6 +4,7 @@ import br.edu.ifs.academico.DTO.StatusMovimentacaoDTO;
 import br.edu.ifs.academico.entity.StatusMovimentacao;
 import br.edu.ifs.academico.repository.StatusMovimentacaoRepository;
 import br.edu.ifs.academico.repository.MovimentacaoPontosRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
@@ -68,9 +69,9 @@ public class StatusMovimentacaoService {
     }
 
 
+    @Transactional
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     public void apagarStatus(Long id, String emailLogado) {
-
         var status = statusRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("status não encontrado"));
 
@@ -78,7 +79,12 @@ public class StatusMovimentacaoService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Não autorizado");
         }
 
+        var movimentacao = status.getMovimentacao();
+        movimentacao.setStatus(null);
+
+        movimentacaoRepository.save(movimentacao);
         statusRepository.delete(status);
     }
+
 
 }

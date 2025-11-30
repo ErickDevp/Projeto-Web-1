@@ -6,7 +6,6 @@ import java.time.LocalDate;
 public record MovimentacaoPontosDTO(
         Long cartaoId,
         Long programaId, // id do programa
-        BigDecimal valor,
-        LocalDate data_ocorrencia
+        BigDecimal valor
 ) {
 }

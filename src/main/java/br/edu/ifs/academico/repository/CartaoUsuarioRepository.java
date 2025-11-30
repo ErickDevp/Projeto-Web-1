@@ -11,4 +11,6 @@ import java.util.Optional;
 public interface CartaoUsuarioRepository extends JpaRepository<CartaoUsuario, Long> {
     List<CartaoUsuario> findByUsuarioId(Long id);
     Optional<CartaoUsuario> findByNomeAndUsuarioId(String nome, Long usuarioId);
+    boolean existsByProgramas_Id(Long programaId);
+
 }
