@@ -12,4 +12,6 @@ import java.util.Optional;
 public interface MovimentacaoPontosRepository extends JpaRepository<MovimentacaoPontos, Long > {
     List<MovimentacaoPontos> findByUsuarioId(Long id);
     Optional<MovimentacaoPontos> findByIdAndUsuarioEmail(Long id, String email);
+    List<MovimentacaoPontos> findByUsuarioIdOrderByDataOcorrenciaDesc(Long userId);
+
 }

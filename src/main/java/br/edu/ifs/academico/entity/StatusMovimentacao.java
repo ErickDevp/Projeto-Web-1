@@ -8,7 +8,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "tb_historicos")
+@Table(name = "tb_status")
 @Builder
 @Data
 @AllArgsConstructor
@@ -16,7 +16,7 @@ import lombok.NoArgsConstructor;
 public class StatusMovimentacao {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id_historico")
+    @Column(name = "id_status")
     private Long id;
 
     private br.edu.ifs.academico.entity.enums.StatusMovimentacao status;

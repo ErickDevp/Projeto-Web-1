@@ -96,7 +96,7 @@ public class InicializacaoConfig {
                 MovimentacaoPontos movimentacao = MovimentacaoPontos.builder()
                         .valor(BigDecimal.valueOf(1000.00))
                         .pontos_calculados(1000)
-                        .data_ocorrencia(LocalDate.now())
+                        .dataOcorrencia(LocalDate.now())
                         .usuario(admin)
                         .saldo(saldo)
                         .cartao(cartao)

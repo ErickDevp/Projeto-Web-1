@@ -2,6 +2,7 @@ package br.edu.ifs.academico.service;
 
 import br.edu.ifs.academico.DTO.ProgramaFidelidadeDTO;
 import br.edu.ifs.academico.entity.ProgramaFidelidade;
+import br.edu.ifs.academico.repository.CartaoUsuarioRepository;
 import br.edu.ifs.academico.repository.ProgramaFidelidadeRepository;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
@@ -11,9 +12,12 @@ import java.util.List;
 public class ProgramaFidelidadeService {
 
     private final ProgramaFidelidadeRepository programaRepository;
+    private final CartaoUsuarioRepository cartaoRepository;
 
-    public ProgramaFidelidadeService(ProgramaFidelidadeRepository programaRepository) {
+
+    public ProgramaFidelidadeService(ProgramaFidelidadeRepository programaRepository, CartaoUsuarioRepository cartaoRepository) {
         this.programaRepository = programaRepository;
+        this.cartaoRepository = cartaoRepository;
     }
 
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
@@ -42,11 +46,16 @@ public class ProgramaFidelidadeService {
         programaRepository.save(programa);
     }
 
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN')")
     public void apagarPrograma(Long id) {
         if(!programaRepository.existsById(id)) {
             throw new RuntimeException("Programa não encontrado");
         }
+
+        if (cartaoRepository.existsByProgramas_Id(id)) {
+            throw new IllegalStateException("Não pode apagar: há cartões vinculados.");
+        }
+
         programaRepository.deleteById(id);
     }
 }

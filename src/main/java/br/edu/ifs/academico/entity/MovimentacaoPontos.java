@@ -25,7 +25,15 @@ public class MovimentacaoPontos {
 
     private BigDecimal valor;
     private Integer pontos_calculados;
-    private LocalDate data_ocorrencia;
+    
+    @Column(name = "data_ocorrencia")
+    private LocalDate dataOcorrencia;
+
+
+    @PrePersist
+    public void prePersist() {
+        this.dataOcorrencia = LocalDate.now();
+    }
 
     @OneToMany(mappedBy = "movimentacao", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Comprovante> comprovantes;

@@ -82,7 +82,6 @@ public class MovimentacaoPontosService {
                 .cartao(cartao)
                 .valor(dto.valor())
                 .pontos_calculados(pontosCalculados)
-                .data_ocorrencia(dto.data_ocorrencia())
                 .build();
 
         saldo.setPontos(saldo.getPontos() + entity.getPontos_calculados());
@@ -121,10 +120,6 @@ public class MovimentacaoPontosService {
             movimentacao.setPontos_calculados(novosPontos);
 
             saldo.setPontos(saldo.getPontos() + novosPontos);
-        }
-
-        if (dto.data_ocorrencia() != null) {
-            movimentacao.setData_ocorrencia(dto.data_ocorrencia());
         }
 
         saldoRepository.save(saldo);
