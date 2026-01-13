@@ -24,7 +24,6 @@ public class JwtService {
 
         Map<String, Object> claims = Map.of("role", role);
 
-
         return Jwts.builder()
                 .setSubject(userDetails.getUsername())
                 .setIssuedAt(new Date())
@@ -34,7 +33,7 @@ public class JwtService {
     }
 
     public String extractUsername(String token) {
-        return Jwts.parserBuilder()
+        return Jwts.parser()
                 .setSigningKey(key) // usa Key, não String
                 .build()
                 .parseClaimsJws(token)
@@ -43,7 +42,7 @@ public class JwtService {
     }
 
     private boolean isTokenExpired(String token) {
-        return Jwts.parserBuilder()
+        return Jwts.parser()
                 .setSigningKey(key) // usa Key
                 .build()
                 .parseClaimsJws(token)
@@ -58,4 +57,3 @@ public class JwtService {
     }
 
 }
-
