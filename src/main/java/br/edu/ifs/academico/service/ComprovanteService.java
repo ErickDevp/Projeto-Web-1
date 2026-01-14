@@ -23,7 +23,8 @@ public class ComprovanteService {
     private final ComprovanteRepository comprovanteRepository;
     private final MovimentacaoPontosRepository movimentacaoRepository;
 
-    public ComprovanteService(ComprovanteRepository comprovanteRepository, MovimentacaoPontosRepository movimentacaoRepository) {
+    public ComprovanteService(ComprovanteRepository comprovanteRepository,
+            MovimentacaoPontosRepository movimentacaoRepository) {
         this.comprovanteRepository = comprovanteRepository;
         this.movimentacaoRepository = movimentacaoRepository;
     }
@@ -53,7 +54,8 @@ public class ComprovanteService {
 
         String contentType = file.getContentType();
         if (contentType == null ||
-                !(contentType.equals("image/png") || contentType.equals("image/jpeg") || contentType.equals("application/pdf"))) {
+                !(contentType.equals("image/png") || contentType.equals("image/jpeg")
+                        || contentType.equals("application/pdf"))) {
             throw new RuntimeException("Tipo de arquivo não suportado. Aceito: png, jpg, pdf");
         }
 
@@ -65,9 +67,12 @@ public class ComprovanteService {
             String ext = "";
             if (original != null && original.contains(".")) {
                 ext = original.substring(original.lastIndexOf('.'));
-            } else if (contentType.equals("image/png")) ext = ".png";
-            else if (contentType.equals("image/jpeg")) ext = ".jpg";
-            else if (contentType.equals("application/pdf")) ext = ".pdf";
+            } else if (contentType.equals("image/png"))
+                ext = ".png";
+            else if (contentType.equals("image/jpeg"))
+                ext = ".jpg";
+            else if (contentType.equals("application/pdf"))
+                ext = ".pdf";
 
             String filename = UUID.randomUUID().toString() + ext;
             Path target = base.resolve(filename);
@@ -98,9 +103,12 @@ public class ComprovanteService {
             throw new RuntimeException("Você não pode alterar comprovante de outro usuário");
         }
 
-        if (dto.caminho() != null) comprovante.setCaminho(dto.caminho());
-        if (dto.tipo_arq() != null) comprovante.setTipo_arq(dto.tipo_arq());
-        if (dto.tamanho_bytes() != null) comprovante.setTamanho_bytes(dto.tamanho_bytes());
+        if (dto.caminho() != null)
+            comprovante.setCaminho(dto.caminho());
+        if (dto.tipo_arq() != null)
+            comprovante.setTipo_arq(dto.tipo_arq());
+        if (dto.tamanho_bytes() != null)
+            comprovante.setTamanho_bytes(dto.tamanho_bytes());
 
         // Se mover o comprovante para outra movimentação, validar também
         if (dto.movimentacaoId() != null) {
@@ -113,7 +121,6 @@ public class ComprovanteService {
 
         comprovanteRepository.save(comprovante);
     }
-
 
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     public void apagarComprovante(Long id, String emailLogado) {

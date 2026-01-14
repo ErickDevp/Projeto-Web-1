@@ -15,8 +15,8 @@ public class ProgramaFidelidadeService {
     private final ProgramaFidelidadeRepository programaRepository;
     private final CartaoUsuarioRepository cartaoRepository;
 
-
-    public ProgramaFidelidadeService(ProgramaFidelidadeRepository programaRepository, CartaoUsuarioRepository cartaoRepository) {
+    public ProgramaFidelidadeService(ProgramaFidelidadeRepository programaRepository,
+            CartaoUsuarioRepository cartaoRepository) {
         this.programaRepository = programaRepository;
         this.cartaoRepository = cartaoRepository;
     }
@@ -41,15 +41,19 @@ public class ProgramaFidelidadeService {
         var programa = programaRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Programa não encontrado"));
 
-        if(programaDTO.nome() != null) { programa.setNome(programaDTO.nome()); }
-        if(programaDTO.descricao() != null) { programa.setDescricao(programaDTO.descricao()); }
+        if (programaDTO.nome() != null) {
+            programa.setNome(programaDTO.nome());
+        }
+        if (programaDTO.descricao() != null) {
+            programa.setDescricao(programaDTO.descricao());
+        }
 
         programaRepository.save(programa);
     }
 
     @PreAuthorize("hasAnyRole('ADMIN')")
     public void apagarPrograma(Long id) {
-        if(!programaRepository.existsById(id)) {
+        if (!programaRepository.existsById(id)) {
             throw new RuntimeException("Programa não encontrado");
         }
 

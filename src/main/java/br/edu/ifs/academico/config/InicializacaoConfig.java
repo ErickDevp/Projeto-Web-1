@@ -59,45 +59,45 @@ public class InicializacaoConfig {
                 log.info("ADMIN criado automaticamente!");
             }
 
-                ProgramaFidelidade programa = programaRepository.findByNome(PROGRAMA_PADRAO).orElse(null);
-                if (programa == null) {
+            ProgramaFidelidade programa = programaRepository.findByNome(PROGRAMA_PADRAO).orElse(null);
+            if (programa == null) {
                 ProgramaFidelidade novoPrograma = ProgramaFidelidade.builder()
-                    .nome(PROGRAMA_PADRAO)
-                    .descricao("Programa padrão criado na inicialização")
-                    .build();
+                        .nome(PROGRAMA_PADRAO)
+                        .descricao("Programa padrão criado na inicialização")
+                        .build();
                 log.info("Programa padrão criado!");
                 programa = programaRepository.save(novoPrograma);
-                }
+            }
 
-                SaldoUsuarioPrograma saldo = saldoRepository
+            SaldoUsuarioPrograma saldo = saldoRepository
                     .findByUsuarioIdAndProgramaId(admin.getId(), programa.getId())
                     .orElse(null);
-                if (saldo == null) {
+            if (saldo == null) {
                 SaldoUsuarioPrograma novoSaldo = SaldoUsuarioPrograma.builder()
-                    .usuario(admin)
-                    .programa(programa)
-                    .pontos(0)
-                    .build();
+                        .usuario(admin)
+                        .programa(programa)
+                        .pontos(0)
+                        .build();
                 log.info("Saldo padrão criado!");
                 saldo = saldoRepository.save(novoSaldo);
-                }
+            }
 
-                CartaoUsuario cartao = cartaoRepository
+            CartaoUsuario cartao = cartaoRepository
                     .findByNomeAndUsuarioId(CARTAO_PADRAO, admin.getId())
                     .orElse(null);
-                if (cartao == null) {
+            if (cartao == null) {
                 CartaoUsuario novoCartao = CartaoUsuario.builder()
-                    .nome(CARTAO_PADRAO)
-                    .bandeira(Bandeira.VISA)
-                    .tipo(TipoCartao.CREDITO)
-                    .pontos(0d)
-                    .usuario(admin)
-                    .programas(new HashSet<>())
-                    .build();
+                        .nome(CARTAO_PADRAO)
+                        .bandeira(Bandeira.VISA)
+                        .tipo(TipoCartao.CREDITO)
+                        .pontos(0d)
+                        .usuario(admin)
+                        .programas(new HashSet<>())
+                        .build();
                 novoCartao.getProgramas().add(programa);
                 log.info("Cartão padrão criado!");
                 cartao = cartaoRepository.save(novoCartao);
-                }
+            }
 
             if (movimentacaoRepository.findByUsuarioId(admin.getId()).isEmpty()) {
                 MovimentacaoPontos movimentacao = MovimentacaoPontos.builder()

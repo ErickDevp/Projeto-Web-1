@@ -23,7 +23,8 @@ public class CartaoUsuarioService {
     private final UsuarioRepository usuarioRepository;
     private final ProgramaFidelidadeRepository programaRepository;
 
-    public CartaoUsuarioService(CartaoUsuarioRepository cartaoRepository, UsuarioRepository usuarioRepository, ProgramaFidelidadeRepository programaRepository) {
+    public CartaoUsuarioService(CartaoUsuarioRepository cartaoRepository, UsuarioRepository usuarioRepository,
+            ProgramaFidelidadeRepository programaRepository) {
         this.cartaoRepository = cartaoRepository;
         this.usuarioRepository = usuarioRepository;
         this.programaRepository = programaRepository;
@@ -45,7 +46,7 @@ public class CartaoUsuarioService {
 
         // Buscar todos os programas pelo IDs recebidos no DTO
         Set<ProgramaFidelidade> programas = cartaoDTO.programaIds().stream()
-            .map(id -> programaRepository.findById(id)
+                .map(id -> programaRepository.findById(id)
                         .orElseThrow(() -> new RuntimeException("Programa Fidelidade não encontrado: " + id)))
                 .collect(Collectors.toSet());
 
@@ -70,14 +71,19 @@ public class CartaoUsuarioService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Não autorizado");
         }
 
-        if (cartaoDTO.nome() != null) cartao.setNome(cartaoDTO.nome());
-        if (cartaoDTO.bandeira() != null) cartao.setBandeira(cartaoDTO.bandeira());
-        if (cartaoDTO.tipo() != null) cartao.setTipo(cartaoDTO.tipo());
-        if (cartaoDTO.pontos() != null) cartao.setPontos(cartaoDTO.pontos());
+        if (cartaoDTO.nome() != null)
+            cartao.setNome(cartaoDTO.nome());
+        if (cartaoDTO.bandeira() != null)
+            cartao.setBandeira(cartaoDTO.bandeira());
+        if (cartaoDTO.tipo() != null)
+            cartao.setTipo(cartaoDTO.tipo());
+        if (cartaoDTO.pontos() != null)
+            cartao.setPontos(cartaoDTO.pontos());
         if (cartaoDTO.programaIds() != null) {
             Set<ProgramaFidelidade> programas = cartaoDTO.programaIds().stream()
                     .map(idPrograma -> programaRepository.findById(idPrograma)
-                            .orElseThrow(() -> new RuntimeException("Programa Fidelidade não encontrado: " + idPrograma)))
+                            .orElseThrow(
+                                    () -> new RuntimeException("Programa Fidelidade não encontrado: " + idPrograma)))
                     .collect(Collectors.toSet());
 
             cartao.setProgramas(programas);

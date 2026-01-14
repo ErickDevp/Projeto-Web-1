@@ -32,7 +32,7 @@ public class PromocaoController {
 
     @PutMapping("/{id}")
     public ResponseEntity<Void> atualizarPromocao(@PathVariable Long id,
-                                                  @RequestBody PromocaoDTO promocaoDTO) {
+            @RequestBody PromocaoDTO promocaoDTO) {
         promocaoService.atualizarPromocao(promocaoDTO, id);
         return ResponseEntity.noContent().build();
     }
@@ -42,7 +42,5 @@ public class PromocaoController {
         promocaoService.apagarPromocao(id);
         return ResponseEntity.noContent().build();
     }
-
-
 
 }

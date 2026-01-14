@@ -19,7 +19,8 @@ public class StatusMovimentacaoService {
     private final StatusMovimentacaoRepository statusRepository;
     private final MovimentacaoPontosRepository movimentacaoRepository;
 
-    public StatusMovimentacaoService(StatusMovimentacaoRepository statusRepository, MovimentacaoPontosRepository movimentacaoRepository) {
+    public StatusMovimentacaoService(StatusMovimentacaoRepository statusRepository,
+            MovimentacaoPontosRepository movimentacaoRepository) {
         this.statusRepository = statusRepository;
         this.movimentacaoRepository = movimentacaoRepository;
     }
@@ -35,12 +36,11 @@ public class StatusMovimentacaoService {
         return statusRepository.findByMovimentacaoId(movimentacao.getId());
     }
 
-
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     public Long criarStatus(StatusMovimentacaoDTO statusDTO, String emailLogado) {
 
         var movimentacao = movimentacaoRepository
-            .findByIdAndUsuarioEmail(statusDTO.movimentacaoId(), emailLogado)
+                .findByIdAndUsuarioEmail(statusDTO.movimentacaoId(), emailLogado)
                 .orElseThrow(() -> new RuntimeException("Movimentação não encontrada ou não pertence ao usuário"));
 
         var entity = StatusMovimentacao.builder()
@@ -52,7 +52,6 @@ public class StatusMovimentacaoService {
         return statusRepository.save(entity).getId();
     }
 
-
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     public void atualizarStatus(StatusMovimentacaoDTO statusDTO, Long id, String emailLogado) {
 
@@ -63,12 +62,13 @@ public class StatusMovimentacaoService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Não autorizado");
         }
 
-        if (statusDTO.status() != null) status.setStatus(statusDTO.status());
-        if (statusDTO.motivo() != null) status.setMotivo(statusDTO.motivo());
+        if (statusDTO.status() != null)
+            status.setStatus(statusDTO.status());
+        if (statusDTO.motivo() != null)
+            status.setMotivo(statusDTO.motivo());
 
         statusRepository.save(status);
     }
-
 
     @Transactional
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
@@ -86,6 +86,5 @@ public class StatusMovimentacaoService {
         movimentacaoRepository.save(movimentacao);
         statusRepository.delete(status);
     }
-
 
 }

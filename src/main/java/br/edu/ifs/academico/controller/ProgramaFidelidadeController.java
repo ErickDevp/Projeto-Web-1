@@ -31,7 +31,8 @@ public class ProgramaFidelidadeController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Void> atualizarPrograma(@PathVariable Long id, @RequestBody ProgramaFidelidadeDTO programaDTO) {
+    public ResponseEntity<Void> atualizarPrograma(@PathVariable Long id,
+            @RequestBody ProgramaFidelidadeDTO programaDTO) {
         programaService.atualizarPrograma(programaDTO, id);
         return ResponseEntity.noContent().build();
     }

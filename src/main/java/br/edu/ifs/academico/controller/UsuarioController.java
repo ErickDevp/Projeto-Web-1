@@ -20,7 +20,7 @@ public class UsuarioController {
     }
 
     @GetMapping("/me")
-    public ResponseEntity<UsuarioDTO> pegarUsuarioAtual(Authentication authentication){
+    public ResponseEntity<UsuarioDTO> pegarUsuarioAtual(Authentication authentication) {
         String email = authentication.getName();
         return ResponseEntity.ok(usuarioService.buscarUsuario(email));
     }
@@ -36,8 +36,7 @@ public class UsuarioController {
 
     @DeleteMapping("/me")
     public ResponseEntity<Void> deletarMinhaConta(
-            @AuthenticationPrincipal UserDetails userDetails
-    ) {
+            @AuthenticationPrincipal UserDetails userDetails) {
         usuarioService.apagarUsuario(userDetails.getUsername());
         return ResponseEntity.noContent().build();
     }

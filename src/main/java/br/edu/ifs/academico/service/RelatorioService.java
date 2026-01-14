@@ -22,8 +22,6 @@ import com.itextpdf.layout.element.Table;
 import com.itextpdf.layout.element.Paragraph;
 import com.itextpdf.layout.properties.TextAlignment;
 
-
-
 @Service
 @RequiredArgsConstructor
 public class RelatorioService {
@@ -32,7 +30,6 @@ public class RelatorioService {
     private final SaldoUsuarioProgramaRepository saldoRepo;
     private final CartaoUsuarioRepository cartaoRepo;
     private final UsuarioRepository usuarioRepository;
-
 
     public RelatorioResponseDTO gerarRelatorio(String emailLogado) {
         var usuario = usuarioRepository.findByEmail(emailLogado)
@@ -53,11 +50,9 @@ public class RelatorioService {
             return new PontosPorCartaoDTO(
                     cartao.getId(),
                     cartao.getNome(),
-                    total
-            );
+                    total);
 
         }).toList();
-
 
         // ------------------ Histórico ------------------
         var movs = movRepo.findByUsuarioIdOrderByDataOcorrenciaDesc(usuario.getId());
@@ -68,8 +63,7 @@ public class RelatorioService {
                         m.getSaldo().getPrograma().getNome(),
                         m.getPontos_calculados(),
                         m.getDataOcorrencia(),
-                        m.getStatus() != null ? m.getStatus().getStatus().name() : "SEM_STATUS"
-                ))
+                        m.getStatus() != null ? m.getStatus().getStatus().name() : "SEM_STATUS"))
                 .toList();
 
         return new RelatorioResponseDTO(
@@ -127,8 +121,7 @@ public class RelatorioService {
             doc.add(new Paragraph("Relatório de Milhas")
                     .setBold()
                     .setFontSize(20)
-                    .setTextAlignment(TextAlignment.CENTER)
-            );
+                    .setTextAlignment(TextAlignment.CENTER));
 
             doc.add(new Paragraph("\n"));
 
@@ -175,4 +168,3 @@ public class RelatorioService {
         }
     }
 }
-

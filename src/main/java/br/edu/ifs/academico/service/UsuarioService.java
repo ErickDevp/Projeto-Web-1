@@ -27,8 +27,7 @@ public class UsuarioService {
                 usuario.getId(),
                 usuario.getNome(),
                 usuario.getEmail(),
-                null
-        );
+                null);
     }
 
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
@@ -36,8 +35,10 @@ public class UsuarioService {
         var usuario = usuarioRepository.findByEmail(emailLogado)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuário não encontrado"));
 
-        if (usuarioDTO.nome() != null) usuario.setNome(usuarioDTO.nome());
-        if (usuarioDTO.email() != null) usuario.setEmail(usuarioDTO.email());
+        if (usuarioDTO.nome() != null)
+            usuario.setNome(usuarioDTO.nome());
+        if (usuarioDTO.email() != null)
+            usuario.setEmail(usuarioDTO.email());
 
         usuarioRepository.save(usuario);
     }

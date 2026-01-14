@@ -20,8 +20,7 @@ public class ApiExceptionHandler {
     @ExceptionHandler(ResponseStatusException.class)
     public ResponseEntity<ProblemDetail> handleResponseStatusException(
             ResponseStatusException ex,
-            HttpServletRequest request
-    ) {
+            HttpServletRequest request) {
         ProblemDetail problem = ProblemDetail.forStatus(ex.getStatusCode());
         problem.setTitle(HttpStatus.valueOf(ex.getStatusCode().value()).getReasonPhrase());
         problem.setDetail(ex.getReason() != null ? ex.getReason() : "Erro");
@@ -33,8 +32,7 @@ public class ApiExceptionHandler {
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ProblemDetail> handleValidation(
             MethodArgumentNotValidException ex,
-            HttpServletRequest request
-    ) {
+            HttpServletRequest request) {
         ProblemDetail problem = ProblemDetail.forStatus(HttpStatus.BAD_REQUEST);
         problem.setTitle("Validação falhou");
         problem.setDetail("Um ou mais campos estão inválidos");

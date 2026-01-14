@@ -22,18 +22,21 @@ public class StatusMovimentacaoController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Optional<StatusMovimentacao>> buscarStatus(@PathVariable Long id, @AuthenticationPrincipal UserDetails userDetails) {
+    public ResponseEntity<Optional<StatusMovimentacao>> buscarStatus(@PathVariable Long id,
+            @AuthenticationPrincipal UserDetails userDetails) {
         return ResponseEntity.ok(statusService.buscarStatusPorId(id, userDetails.getUsername()));
     }
 
     @PostMapping("/criar")
-    public ResponseEntity<String> criarStatus(@RequestBody StatusMovimentacaoDTO statusDTO, @AuthenticationPrincipal UserDetails userDetails) {
+    public ResponseEntity<String> criarStatus(@RequestBody StatusMovimentacaoDTO statusDTO,
+            @AuthenticationPrincipal UserDetails userDetails) {
         statusService.criarStatus(statusDTO, userDetails.getUsername());
         return ResponseEntity.ok("Operação realizada");
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Void> atualizarStatus(@PathVariable Long id, @RequestBody StatusMovimentacaoDTO statusDTO, @AuthenticationPrincipal UserDetails userDetails) {
+    public ResponseEntity<Void> atualizarStatus(@PathVariable Long id, @RequestBody StatusMovimentacaoDTO statusDTO,
+            @AuthenticationPrincipal UserDetails userDetails) {
         statusService.atualizarStatus(statusDTO, id, userDetails.getUsername());
         return ResponseEntity.noContent().build();
     }
