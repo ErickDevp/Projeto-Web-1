@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 @Service
+@SuppressWarnings("null")
 public class PromocaoService {
 
     private final PromocaoRepository promocaoRepository;
@@ -47,14 +48,25 @@ public class PromocaoService {
         var promocao = promocaoRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Promoção não encontrado"));
 
-        if(promoDTO.titulo() != null) { promocao.setTitulo(promoDTO.titulo()); }
-        if(promoDTO.descricao() != null) { promocao.setDescricao(promoDTO.descricao()); }
-        if(promoDTO.data_inicio() != null) { promocao.setData_inicio(promoDTO.data_inicio()); }
-        if(promoDTO.data_fim() != null) { promocao.setData_fim(promoDTO.data_fim()); }
-        if(promoDTO.ativo() != null) { promocao.setAtivo(promoDTO.ativo()); }
+        if (promoDTO.titulo() != null) {
+            promocao.setTitulo(promoDTO.titulo());
+        }
+        if (promoDTO.descricao() != null) {
+            promocao.setDescricao(promoDTO.descricao());
+        }
+        if (promoDTO.data_inicio() != null) {
+            promocao.setData_inicio(promoDTO.data_inicio());
+        }
+        if (promoDTO.data_fim() != null) {
+            promocao.setData_fim(promoDTO.data_fim());
+        }
+        if (promoDTO.ativo() != null) {
+            promocao.setAtivo(promoDTO.ativo());
+        }
 
-        if(promoDTO.programaId() != null && programaRepository.existsById(promoDTO.programaId())) {
-            var programa = programaRepository.findById(promoDTO.programaId())
+        Long programaId = promoDTO.programaId();
+        if (programaId != null && programaRepository.existsById(programaId)) {
+            var programa = programaRepository.findById(programaId)
                     .orElseThrow(() -> new RuntimeException("programaFidelidade não encontrada"));
 
             promocao.setPrograma(programa);
@@ -65,11 +77,10 @@ public class PromocaoService {
 
     @PreAuthorize("hasAnyRole('ADMIN')")
     public void apagarPromocao(Long id) {
-        if(!promocaoRepository.existsById(id)) {
+        if (!promocaoRepository.existsById(id)) {
             throw new RuntimeException("promoção não encontrado");
         }
         promocaoRepository.deleteById(id);
     }
-
 
 }

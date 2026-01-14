@@ -19,7 +19,6 @@ import com.itextpdf.kernel.pdf.PdfWriter;
 import com.itextpdf.kernel.pdf.PdfDocument;
 import com.itextpdf.layout.Document;
 import com.itextpdf.layout.element.Table;
-import com.itextpdf.layout.element.Cell;
 import com.itextpdf.layout.element.Paragraph;
 import com.itextpdf.layout.properties.TextAlignment;
 
@@ -85,9 +84,6 @@ public class RelatorioService {
     // ============================================================
 
     public byte[] gerarCsv(String emailLogado) {
-        var usuario = usuarioRepository.findByEmail(emailLogado)
-                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
-
         RelatorioResponseDTO rel = gerarRelatorio(emailLogado);
 
         StringBuilder sb = new StringBuilder();
@@ -119,9 +115,6 @@ public class RelatorioService {
     // ============================================================
 
     public byte[] gerarPdf(String emailLogado) {
-        var usuario = usuarioRepository.findByEmail(emailLogado)
-                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
-
         try {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             PdfWriter writer = new PdfWriter(baos);

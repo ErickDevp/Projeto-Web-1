@@ -1,8 +1,6 @@
 package br.edu.ifs.academico.controller;
 
-import br.edu.ifs.academico.DTO.CartaoUsuarioDTO;
 import br.edu.ifs.academico.DTO.MovimentacaoPontosDTO;
-import br.edu.ifs.academico.entity.CartaoUsuario;
 import br.edu.ifs.academico.entity.MovimentacaoPontos;
 import br.edu.ifs.academico.service.MovimentacaoPontosService;
 import org.springframework.http.ResponseEntity;
@@ -14,6 +12,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/movimentacao")
+@SuppressWarnings("null")
 public class MovimentacaoPontosController {
 
     private final MovimentacaoPontosService movimentacaoService;
@@ -24,25 +23,27 @@ public class MovimentacaoPontosController {
 
     @GetMapping
     public ResponseEntity<List<MovimentacaoPontos>> buscarMovimentacoes(
-            @AuthenticationPrincipal UserDetails userDetails
-    ) {
+            @AuthenticationPrincipal UserDetails userDetails) {
         return ResponseEntity.ok(movimentacaoService.buscarTodasMovimentacoes(userDetails.getUsername()));
     }
 
     @PostMapping("/criar")
-    public ResponseEntity<String> criarMovimentacao(@RequestBody MovimentacaoPontosDTO movimentacaoDTO, @AuthenticationPrincipal UserDetails userDetails) {
+    public ResponseEntity<String> criarMovimentacao(@RequestBody MovimentacaoPontosDTO movimentacaoDTO,
+            @AuthenticationPrincipal UserDetails userDetails) {
         movimentacaoService.criarMovimentacao(movimentacaoDTO, userDetails.getUsername());
         return ResponseEntity.ok("Operação realizada");
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Void> atualizarMovimentacao(@RequestBody MovimentacaoPontosDTO movimentacaoDTO, @PathVariable Long id, @AuthenticationPrincipal UserDetails userDetails) {
+    public ResponseEntity<Void> atualizarMovimentacao(@RequestBody MovimentacaoPontosDTO movimentacaoDTO,
+            @PathVariable Long id, @AuthenticationPrincipal UserDetails userDetails) {
         movimentacaoService.atualizarMovimentacao(movimentacaoDTO, id, userDetails.getUsername());
         return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> apagarMovimentacao(@PathVariable Long id, @AuthenticationPrincipal UserDetails userDetails) {
+    public ResponseEntity<Void> apagarMovimentacao(@PathVariable Long id,
+            @AuthenticationPrincipal UserDetails userDetails) {
         movimentacaoService.apagarMovimentacao(id, userDetails.getUsername());
         return ResponseEntity.noContent().build();
     }

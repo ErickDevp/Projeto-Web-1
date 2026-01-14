@@ -10,6 +10,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/promocao")
+@SuppressWarnings("null")
 public class PromocaoController {
 
     private final PromocaoService promocaoService;

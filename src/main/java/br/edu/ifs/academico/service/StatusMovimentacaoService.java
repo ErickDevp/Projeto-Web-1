@@ -13,6 +13,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.util.Optional;
 
 @Service
+@SuppressWarnings("null")
 public class StatusMovimentacaoService {
 
     private final StatusMovimentacaoRepository statusRepository;
@@ -39,7 +40,7 @@ public class StatusMovimentacaoService {
     public Long criarStatus(StatusMovimentacaoDTO statusDTO, String emailLogado) {
 
         var movimentacao = movimentacaoRepository
-                .findByIdAndUsuarioEmail(statusDTO.movimentacaoId(), emailLogado)
+            .findByIdAndUsuarioEmail(statusDTO.movimentacaoId(), emailLogado)
                 .orElseThrow(() -> new RuntimeException("Movimentação não encontrada ou não pertence ao usuário"));
 
         var entity = StatusMovimentacao.builder()

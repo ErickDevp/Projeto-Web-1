@@ -12,6 +12,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/cartao")
+@SuppressWarnings("null")
 public class CartaoUsuarioController {
 
     private final CartaoUsuarioService cartaoService;
@@ -23,15 +24,14 @@ public class CartaoUsuarioController {
     // Buscar todos os cartões de um usuário
     @GetMapping
     public ResponseEntity<List<CartaoUsuario>> buscarMeusCartoes(
-            @AuthenticationPrincipal UserDetails userDetails
-    ) {
+            @AuthenticationPrincipal UserDetails userDetails) {
         return ResponseEntity.ok(cartaoService.buscarTodosCartoes(userDetails.getUsername()));
     }
 
     // Criar um novo cartão vinculado ao usuário
     @PostMapping("/criar")
     public ResponseEntity<String> criarCartao(@AuthenticationPrincipal UserDetails userDetails,
-                                            @RequestBody CartaoUsuarioDTO cartaoDTO) {
+            @RequestBody CartaoUsuarioDTO cartaoDTO) {
         cartaoService.criarCartao(cartaoDTO, userDetails.getUsername());
         return ResponseEntity.ok("Operação realizada");
     }
@@ -39,15 +39,15 @@ public class CartaoUsuarioController {
     // Atualizar um cartão existente
     @PutMapping("/{id}")
     public ResponseEntity<Void> atualizarCartao(@AuthenticationPrincipal UserDetails userDetails,
-                                                @PathVariable Long id, @RequestBody CartaoUsuarioDTO cartaoDTO) {
-        cartaoService.atualizarCartao(cartaoDTO, id,userDetails.getUsername());
+            @PathVariable Long id, @RequestBody CartaoUsuarioDTO cartaoDTO) {
+        cartaoService.atualizarCartao(cartaoDTO, id, userDetails.getUsername());
         return ResponseEntity.noContent().build();
     }
 
     // Apagar um cartão
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> apagarCartao(@AuthenticationPrincipal UserDetails userDetails,
-                                             @PathVariable Long id) {
+            @PathVariable Long id) {
         cartaoService.apagarCartao(id, userDetails.getUsername());
         return ResponseEntity.noContent().build();
     }

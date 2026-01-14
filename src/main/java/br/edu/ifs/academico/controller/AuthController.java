@@ -4,10 +4,7 @@ import br.edu.ifs.academico.DTO.EsqueciSenhaDTO;
 import br.edu.ifs.academico.DTO.RedefinirSenhaDTO;
 import br.edu.ifs.academico.DTO.UsuarioDTO;
 import br.edu.ifs.academico.DTO.UsuarioLoginDTO;
-import br.edu.ifs.academico.security.ForgotPasswordRateLimiter;
 import br.edu.ifs.academico.service.AuthService;
-import jakarta.servlet.http.HttpServletRequest;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -20,14 +17,10 @@ import java.util.Map;
 @RequestMapping("/auth")
 public class AuthController {
 
-    private static final String FORGOT_PASSWORD_GENERIC_MESSAGE = "Se o e-mail estiver cadastrado, você receberá instruções para redefinir a senha.";
-
     private final AuthService authService;
-    private final ForgotPasswordRateLimiter forgotPasswordRateLimiter;
 
-    public AuthController(AuthService authService, ForgotPasswordRateLimiter forgotPasswordRateLimiter) {
+    public AuthController(AuthService authService) {
         this.authService = authService;
-        this.forgotPasswordRateLimiter = forgotPasswordRateLimiter;
     }
 
     @PostMapping("/login")
@@ -43,31 +36,14 @@ public class AuthController {
     }
 
     @PostMapping("/forgot-password")
-    public ResponseEntity<Map<String, String>> forgotPassword(@RequestBody EsqueciSenhaDTO dto,
-            HttpServletRequest request) {
-        String clientIp = getClientIp(request);
-        String email = dto == null ? null : dto.email();
+    public ResponseEntity<Map<String, String>> forgotPassword(@RequestBody EsqueciSenhaDTO dto) {
+        // Pega o token gerado pelo serviço
+        String tokenGerado = authService.solicitarRedefinicaoSenha(dto.email());
 
-        if (!forgotPasswordRateLimiter.allow(clientIp, email)) {
-            long retryAfterSeconds = forgotPasswordRateLimiter.retryAfterSeconds(clientIp, email);
-            return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
-                    .header("Retry-After", String.valueOf(retryAfterSeconds))
-                    .body(Map.of("message", FORGOT_PASSWORD_GENERIC_MESSAGE));
-        }
-
-        // Importante: resposta genérica para evitar enumeração de contas
-        authService.solicitarRedefinicaoSenha(email);
-        return ResponseEntity.ok(Map.of("message", FORGOT_PASSWORD_GENERIC_MESSAGE));
-    }
-
-    private static String getClientIp(HttpServletRequest request) {
-        String xff = request.getHeader("X-Forwarded-For");
-        if (xff != null && !xff.isBlank()) {
-            // Pega o primeiro IP (cliente) da lista
-            int comma = xff.indexOf(',');
-            return (comma > 0 ? xff.substring(0, comma) : xff).trim();
-        }
-        return request.getRemoteAddr();
+        // Retorna no JSON: { "reset_token": "abc-123-..." }
+        return ResponseEntity.ok(Map.of(
+                "message", "Solicitação recebida. Use o token abaixo para resetar a senha.",
+                "reset_token", tokenGerado));
     }
 
     @PostMapping("/reset-password")

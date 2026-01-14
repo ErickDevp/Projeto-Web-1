@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Service
+@SuppressWarnings("null")
 public class AuthService {
 
     private final UsuarioRepository usuarioRepository;
@@ -82,20 +83,10 @@ public class AuthService {
         }
     }
 
-    // 1. Gera e persiste o token (resposta deve ser genérica para evitar
-    // enumeração)
-    public void solicitarRedefinicaoSenha(String email) {
-        if (email == null || email.isBlank()) {
-            return;
-        }
-
+    // 1. Gera o token e o retorna (para ser exibido na API)
+    public String solicitarRedefinicaoSenha(String email) {
         Usuario usuario = usuarioRepository.findByEmail(email)
-                .orElse(null);
-
-        // Se não existir usuário, não faz nada (evita enumeração)
-        if (usuario == null) {
-            return;
-        }
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuário não encontrado"));
 
         // Se já existir um token antigo para esse usuário, apaga para gerar um novo
         tokenRepository.findByUsuario(usuario).ifPresent(tokenRepository::delete);
@@ -109,6 +100,9 @@ public class AuthService {
                 .build();
 
         tokenRepository.save(resetToken);
+
+        // AQUI: Retornamos o token para o Controller devolver no JSON
+        return token;
     }
 
     // 2. Recebe o token e a nova senha para efetivar a troca

@@ -10,6 +10,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/notificacao")
+@SuppressWarnings("null")
 public class NotificacaoController {
 
     private final NotificacaoService notificacaoService;
@@ -31,7 +32,7 @@ public class NotificacaoController {
 
     @PutMapping("/{id}")
     public ResponseEntity<Void> atualizarNotificacao(@PathVariable Long id,
-                                                  @RequestBody NotificacaoDTO notificacaoDTO) {
+            @RequestBody NotificacaoDTO notificacaoDTO) {
         notificacaoService.atualizarNotificacao(notificacaoDTO, id);
         return ResponseEntity.noContent().build();
     }
@@ -41,6 +42,5 @@ public class NotificacaoController {
         notificacaoService.apagarNotificacao(id);
         return ResponseEntity.noContent().build();
     }
-
 
 }

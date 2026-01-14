@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 @Service
+@SuppressWarnings("null")
 public class NotificacaoService {
 
     private final NotificacaoRepository notificacaoRepository;

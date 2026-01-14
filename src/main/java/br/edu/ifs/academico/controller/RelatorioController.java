@@ -1,7 +1,6 @@
 package br.edu.ifs.academico.controller;
 
 import br.edu.ifs.academico.DTO.relatorio.RelatorioResponseDTO;
-import br.edu.ifs.academico.repository.UsuarioRepository;
 import br.edu.ifs.academico.service.RelatorioService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
@@ -48,6 +47,3 @@ public class RelatorioController {
     }
 
 }
-
-
-

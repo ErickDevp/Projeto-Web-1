@@ -13,6 +13,8 @@ import br.edu.ifs.academico.repository.MovimentacaoPontosRepository;
 import br.edu.ifs.academico.repository.ProgramaFidelidadeRepository;
 import br.edu.ifs.academico.repository.SaldoUsuarioProgramaRepository;
 import br.edu.ifs.academico.repository.UsuarioRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -23,7 +25,10 @@ import java.time.LocalDate;
 import java.util.HashSet;
 
 @Configuration
+@SuppressWarnings("null")
 public class InicializacaoConfig {
+
+    private static final Logger log = LoggerFactory.getLogger(InicializacaoConfig.class);
 
     private static final String ADMIN_EMAIL = "admin@milhas.com";
     private static final String ADMIN_SENHA = "123456";
@@ -32,18 +37,18 @@ public class InicializacaoConfig {
 
     @Bean
     CommandLineRunner init(UsuarioRepository usuarioRepository,
-                           ProgramaFidelidadeRepository programaRepository,
-                           CartaoUsuarioRepository cartaoRepository,
-                           SaldoUsuarioProgramaRepository saldoRepository,
-                           MovimentacaoPontosRepository movimentacaoRepository,
-                           PasswordEncoder encoder) {
+            ProgramaFidelidadeRepository programaRepository,
+            CartaoUsuarioRepository cartaoRepository,
+            SaldoUsuarioProgramaRepository saldoRepository,
+            MovimentacaoPontosRepository movimentacaoRepository,
+            PasswordEncoder encoder) {
         return args -> {
 
             Usuario admin;
             if (usuarioRepository.existsByEmail(ADMIN_EMAIL)) {
                 admin = usuarioRepository.findByEmail(ADMIN_EMAIL)
                         .orElseThrow(() -> new IllegalStateException("Usuário admin deveria existir"));
-                System.out.println(">>> ADMIN já existe, não será recriado.");
+                log.info("ADMIN já existe, não será recriado.");
             } else {
                 Usuario novoAdmin = new Usuario();
                 novoAdmin.setNome("Administrador");
@@ -51,46 +56,48 @@ public class InicializacaoConfig {
                 novoAdmin.setSenha(encoder.encode(ADMIN_SENHA));
                 novoAdmin.setRole(Role.ADMIN);
                 admin = usuarioRepository.save(novoAdmin);
-                System.out.println(">>> ADMIN criado automaticamente!");
+                log.info("ADMIN criado automaticamente!");
             }
 
-            ProgramaFidelidade programa = programaRepository.findByNome(PROGRAMA_PADRAO)
-                    .orElseGet(() -> {
-                        ProgramaFidelidade novoPrograma = ProgramaFidelidade.builder()
-                                .nome(PROGRAMA_PADRAO)
-                                .descricao("Programa padrão criado na inicialização")
-                                .build();
-                        System.out.println(">>> Programa padrão criado!");
-                        return programaRepository.save(novoPrograma);
-                    });
+                ProgramaFidelidade programa = programaRepository.findByNome(PROGRAMA_PADRAO).orElse(null);
+                if (programa == null) {
+                ProgramaFidelidade novoPrograma = ProgramaFidelidade.builder()
+                    .nome(PROGRAMA_PADRAO)
+                    .descricao("Programa padrão criado na inicialização")
+                    .build();
+                log.info("Programa padrão criado!");
+                programa = programaRepository.save(novoPrograma);
+                }
 
-            SaldoUsuarioPrograma saldo = saldoRepository
+                SaldoUsuarioPrograma saldo = saldoRepository
                     .findByUsuarioIdAndProgramaId(admin.getId(), programa.getId())
-                    .orElseGet(() -> {
-                        SaldoUsuarioPrograma novoSaldo = SaldoUsuarioPrograma.builder()
-                                .usuario(admin)
-                                .programa(programa)
-                                .pontos(0)
-                                .build();
-                        System.out.println(">>> Saldo padrão criado!");
-                        return saldoRepository.save(novoSaldo);
-                    });
+                    .orElse(null);
+                if (saldo == null) {
+                SaldoUsuarioPrograma novoSaldo = SaldoUsuarioPrograma.builder()
+                    .usuario(admin)
+                    .programa(programa)
+                    .pontos(0)
+                    .build();
+                log.info("Saldo padrão criado!");
+                saldo = saldoRepository.save(novoSaldo);
+                }
 
-            CartaoUsuario cartao = cartaoRepository
+                CartaoUsuario cartao = cartaoRepository
                     .findByNomeAndUsuarioId(CARTAO_PADRAO, admin.getId())
-                    .orElseGet(() -> {
-                        CartaoUsuario novoCartao = CartaoUsuario.builder()
-                                .nome(CARTAO_PADRAO)
-                                .bandeira(Bandeira.VISA)
-                                .tipo(TipoCartao.CREDITO)
-                                .pontos(0d)
-                                .usuario(admin)
-                                .programas(new HashSet<>())
-                                .build();
-                        novoCartao.getProgramas().add(programa);
-                        System.out.println(">>> Cartão padrão criado!");
-                        return cartaoRepository.save(novoCartao);
-                    });
+                    .orElse(null);
+                if (cartao == null) {
+                CartaoUsuario novoCartao = CartaoUsuario.builder()
+                    .nome(CARTAO_PADRAO)
+                    .bandeira(Bandeira.VISA)
+                    .tipo(TipoCartao.CREDITO)
+                    .pontos(0d)
+                    .usuario(admin)
+                    .programas(new HashSet<>())
+                    .build();
+                novoCartao.getProgramas().add(programa);
+                log.info("Cartão padrão criado!");
+                cartao = cartaoRepository.save(novoCartao);
+                }
 
             if (movimentacaoRepository.findByUsuarioId(admin.getId()).isEmpty()) {
                 MovimentacaoPontos movimentacao = MovimentacaoPontos.builder()
@@ -102,9 +109,9 @@ public class InicializacaoConfig {
                         .cartao(cartao)
                         .build();
                 movimentacaoRepository.save(movimentacao);
-                System.out.println(">>> Movimentação padrão criada!");
+                log.info("Movimentação padrão criada!");
             } else {
-                System.out.println(">>> Usuário admin já possui movimentações, não será criada outra.");
+                log.info("Usuário admin já possui movimentações, não será criada outra.");
             }
         };
     }

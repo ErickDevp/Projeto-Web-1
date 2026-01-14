@@ -10,6 +10,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/programa")
+@SuppressWarnings("null")
 public class ProgramaFidelidadeController {
 
     private final ProgramaFidelidadeService programaService;

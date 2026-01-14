@@ -41,8 +41,10 @@ public class CartaoUsuario {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof CartaoUsuario)) return false;
+        if (this == o)
+            return true;
+        if (!(o instanceof CartaoUsuario))
+            return false;
         CartaoUsuario other = (CartaoUsuario) o;
         return Objects.equals(id, other.id);
     }
@@ -61,10 +63,7 @@ public class CartaoUsuario {
     private Usuario usuario;
 
     @ManyToMany
-    @JoinTable(
-            name = "cartao_usuario_programa",
-            joinColumns = @JoinColumn(name = "cartao_id"),
-            inverseJoinColumns = @JoinColumn(name = "programa_id")
-    )
+    @JoinTable(name = "cartao_usuario_programa", joinColumns = @JoinColumn(name = "cartao_id"), inverseJoinColumns = @JoinColumn(name = "programa_id"))
+    @Builder.Default
     private Set<ProgramaFidelidade> programas = new HashSet<>();
 }

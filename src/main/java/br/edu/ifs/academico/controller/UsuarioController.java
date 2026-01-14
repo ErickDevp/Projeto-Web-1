@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/usuario")
-
+@SuppressWarnings("null")
 public class UsuarioController {
 
     private final UsuarioService usuarioService;

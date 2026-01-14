@@ -16,6 +16,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
+@SuppressWarnings("null")
 public class CartaoUsuarioService {
 
     private final CartaoUsuarioRepository cartaoRepository;
@@ -44,7 +45,7 @@ public class CartaoUsuarioService {
 
         // Buscar todos os programas pelo IDs recebidos no DTO
         Set<ProgramaFidelidade> programas = cartaoDTO.programaIds().stream()
-                .map(id -> programaRepository.findById(id)
+            .map(id -> programaRepository.findById(id)
                         .orElseThrow(() -> new RuntimeException("Programa Fidelidade não encontrado: " + id)))
                 .collect(Collectors.toSet());
 

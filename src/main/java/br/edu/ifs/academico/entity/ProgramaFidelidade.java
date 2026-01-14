@@ -1,17 +1,13 @@
 package br.edu.ifs.academico.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 
 @Entity
 @Table(name = "tb_programas")
@@ -19,7 +15,7 @@ import java.util.Set;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+@JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
 public class ProgramaFidelidade {
 
     @Id
@@ -32,8 +28,10 @@ public class ProgramaFidelidade {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof ProgramaFidelidade)) return false;
+        if (this == o)
+            return true;
+        if (!(o instanceof ProgramaFidelidade))
+            return false;
         ProgramaFidelidade other = (ProgramaFidelidade) o;
         return Objects.equals(id, other.id);
     }

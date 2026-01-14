@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Service
+@SuppressWarnings("null")
 public class ComprovanteService {
 
     private final ComprovanteRepository comprovanteRepository;

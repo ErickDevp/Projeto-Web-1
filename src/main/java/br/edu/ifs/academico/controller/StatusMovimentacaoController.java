@@ -12,6 +12,7 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/status")
+@SuppressWarnings("null")
 public class StatusMovimentacaoController {
 
     private final StatusMovimentacaoService statusService;

@@ -1,54 +1,45 @@
 package br.edu.ifs.academico.service;
 
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
-import java.security.Key;
+import javax.crypto.SecretKey;
 import java.util.Date;
-import java.util.Map;
 
 @Service
 public class JwtService {
 
     // Gere uma chave segura (256 bits para HS256)
-    private final Key key = Keys.hmacShaKeyFor("MINHA_CHAVE_SUPER_SECRETA_COM_256_BITS_PARA_JWT!!!".getBytes());
+    private final SecretKey key = Keys.hmacShaKeyFor("MINHA_CHAVE_SUPER_SECRETA_COM_256_BITS_PARA_JWT!!!".getBytes());
 
     public String generateToken(UserDetails userDetails) {
-        String role = userDetails.getAuthorities().stream()
-                .findFirst()
-                .map(a -> a.getAuthority())
-                .orElse("USER");
-
-        Map<String, Object> claims = Map.of("role", role);
-
         return Jwts.builder()
-                .setSubject(userDetails.getUsername())
-                .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 10)) // 10 horas
+                .subject(userDetails.getUsername())
+                .issuedAt(new Date())
+                .expiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 10)) // 10 horas
                 .signWith(key) // usa a Key, não a String
                 .compact();
     }
 
     public String extractUsername(String token) {
         return Jwts.parser()
-                .setSigningKey(key) // usa Key, não String
-                .build()
-                .parseClaimsJws(token)
-                .getBody()
-                .getSubject();
+            .verifyWith(key)
+            .build()
+            .parseSignedClaims(token)
+            .getPayload()
+            .getSubject();
     }
 
     private boolean isTokenExpired(String token) {
         return Jwts.parser()
-                .setSigningKey(key) // usa Key
-                .build()
-                .parseClaimsJws(token)
-                .getBody()
-                .getExpiration()
-                .before(new Date());
+            .verifyWith(key)
+            .build()
+            .parseSignedClaims(token)
+            .getPayload()
+            .getExpiration()
+            .before(new Date());
     }
 
     public boolean validateToken(String token, UserDetails userDetails) {

@@ -16,9 +16,8 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;
 
-import static java.util.spi.ToolProvider.findFirst;
-
 @Service
+@SuppressWarnings("null")
 public class MovimentacaoPontosService {
 
     private final MovimentacaoPontosRepository movimentacaoRepository;
@@ -34,7 +33,7 @@ public class MovimentacaoPontosService {
     }
 
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
-    public List<MovimentacaoPontos> buscarTodasMovimentacoes(String emailLogado) {
+        public List<MovimentacaoPontos> buscarTodasMovimentacoes(String emailLogado) {
         var usuario = usuarioRepository.findByEmail(emailLogado)
                 .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
 
@@ -42,7 +41,7 @@ public class MovimentacaoPontosService {
     }
 
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
-    public Long criarMovimentacao(MovimentacaoPontosDTO dto, String emailLogado) {
+        public Long criarMovimentacao(MovimentacaoPontosDTO dto, String emailLogado) {
         var usuario = usuarioRepository.findByEmail(emailLogado)
                 .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
 
@@ -85,16 +84,16 @@ public class MovimentacaoPontosService {
                 .build();
 
         saldo.setPontos(saldo.getPontos() + entity.getPontos_calculados());
-        saldoRepository.save(saldo);
+                saldoRepository.save(saldo);
 
-        return movimentacaoRepository.save(entity).getId();
+                return movimentacaoRepository.save(entity).getId();
     }
 
 
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
-    public void atualizarMovimentacao(MovimentacaoPontosDTO dto, Long id, String username) {
+        public void atualizarMovimentacao(MovimentacaoPontosDTO dto, Long id, String username) {
 
-        var movimentacao = movimentacaoRepository.findById(id)
+                var movimentacao = movimentacaoRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Movimentação não encontrada"));
 
         if (!movimentacao.getUsuario().getEmail().equals(username)) {
@@ -122,14 +121,14 @@ public class MovimentacaoPontosService {
             saldo.setPontos(saldo.getPontos() + novosPontos);
         }
 
-        saldoRepository.save(saldo);
-        movimentacaoRepository.save(movimentacao);
+                saldoRepository.save(saldo);
+                movimentacaoRepository.save(movimentacao);
     }
 
 
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
-    public void apagarMovimentacao(Long id, String username) {
-        var movimentacao = movimentacaoRepository.findById(id)
+        public void apagarMovimentacao(Long id, String username) {
+                var movimentacao = movimentacaoRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("movimentação não encontrado"));
 
         if (!movimentacao.getUsuario().getEmail().equals(username)) {
@@ -139,7 +138,7 @@ public class MovimentacaoPontosService {
         var saldo = movimentacao.getSaldo();
         saldo.setPontos(saldo.getPontos() - movimentacao.getPontos_calculados());
 
-        movimentacaoRepository.deleteById(id);
+                movimentacaoRepository.deleteById(id);
     }
 
 }
