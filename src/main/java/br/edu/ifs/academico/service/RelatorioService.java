@@ -1,5 +1,6 @@
 package br.edu.ifs.academico.service;
 
+import br.edu.ifs.academico.DTO.relatorio.EvolucaoMensalDTO;
 import br.edu.ifs.academico.DTO.relatorio.HistoricoMovimentacaoDTO;
 import br.edu.ifs.academico.DTO.relatorio.PontosPorCartaoDTO;
 import br.edu.ifs.academico.DTO.relatorio.RelatorioResponseDTO;
@@ -12,7 +13,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayOutputStream;
+import java.time.YearMonth;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 // iText imports CORRETOS
 import com.itextpdf.kernel.pdf.PdfWriter;
@@ -66,9 +70,25 @@ public class RelatorioService {
                         m.getStatus() != null ? m.getStatus().getStatus().name() : "SEM_STATUS"))
                 .toList();
 
+        // ------------------ Evolução Mensal ------------------
+        Map<YearMonth, Long> totalPorMes = movs.stream()
+                .filter(m -> m.getDataOcorrencia() != null)
+                .collect(Collectors.groupingBy(
+                        m -> YearMonth.from(m.getDataOcorrencia()),
+                        Collectors.summingLong(m -> m.getPontos_calculados() != null ? m.getPontos_calculados() : 0)));
+
+        List<EvolucaoMensalDTO> evolucaoMensal = totalPorMes.entrySet().stream()
+                .sorted(Map.Entry.comparingByKey())
+                .map(e -> new EvolucaoMensalDTO(
+                        e.getKey().getYear(),
+                        e.getKey().getMonthValue(),
+                        e.getValue()))
+                .toList();
+
         return new RelatorioResponseDTO(
                 pontosPorCartao,
                 historico,
+                evolucaoMensal,
                 0.0 // sem campo dataRecebimento
         );
     }
@@ -99,6 +119,15 @@ public class RelatorioService {
                     .append(h.pontosCalculados()).append(";")
                     .append(h.data()).append(";")
                     .append(h.status()).append("\n");
+        });
+
+        sb.append("\n=== EVOLUÇÃO MENSAL ===\n");
+        sb.append("Ano;Mes;Total Pontos\n");
+
+        rel.evolucaoMensal().forEach(e -> {
+            sb.append(e.ano()).append(";")
+                    .append(e.mes()).append(";")
+                    .append(e.totalPontos()).append("\n");
         });
 
         return sb.toString().getBytes();
@@ -159,6 +188,24 @@ public class RelatorioService {
             });
 
             doc.add(tabelaHist);
+
+            doc.add(new Paragraph("\n"));
+
+            // ------------------ EVOLUÇÃO MENSAL ------------------
+            doc.add(new Paragraph("Evolução Mensal de Pontos").setBold().setFontSize(14));
+
+            Table tabelaEvolucao = new Table(3);
+            tabelaEvolucao.addHeaderCell("Ano");
+            tabelaEvolucao.addHeaderCell("Mês");
+            tabelaEvolucao.addHeaderCell("Total Pontos");
+
+            rel.evolucaoMensal().forEach(e -> {
+                tabelaEvolucao.addCell(String.valueOf(e.ano()));
+                tabelaEvolucao.addCell(String.valueOf(e.mes()));
+                tabelaEvolucao.addCell(String.valueOf(e.totalPontos()));
+            });
+
+            doc.add(tabelaEvolucao);
 
             doc.close();
             return baos.toByteArray();
