@@ -1,9 +1,12 @@
 package br.edu.ifs.academico.controller;
 
 import br.edu.ifs.academico.DTO.NotificacaoDTO;
+import br.edu.ifs.academico.DTO.NotificacaoResponseDTO;
 import br.edu.ifs.academico.entity.Notificacao;
 import br.edu.ifs.academico.service.NotificacaoService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -20,8 +23,9 @@ public class NotificacaoController {
     }
 
     @GetMapping
-    public ResponseEntity<List<Notificacao>> buscarTodasNotificacoes() {
-        return ResponseEntity.ok(notificacaoService.buscarNotificacoes());
+    public ResponseEntity<List<NotificacaoResponseDTO>> buscarTodasNotificacoes(Authentication authentication) {
+        String email = authentication.getName();
+        return ResponseEntity.ok(notificacaoService.buscarNotificacoes(email));
     }
 
     @GetMapping("/publicas")
@@ -42,9 +46,24 @@ public class NotificacaoController {
         return ResponseEntity.noContent().build();
     }
 
+    @PutMapping("/{id}/lida")
+    public ResponseEntity<Void> marcarComoLida(@PathVariable Long id, Authentication authentication) {
+        String email = authentication.getName();
+        notificacaoService.marcarComoLida(id, email);
+        return ResponseEntity.noContent().build();
+    }
+
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> apagarNotificacao(@PathVariable Long id) {
-        notificacaoService.apagarNotificacao(id);
+    public ResponseEntity<Void> dismissForMe(@PathVariable Long id, Authentication authentication) {
+        String email = authentication.getName();
+        notificacaoService.dismissForUser(id, email);
+        return ResponseEntity.noContent().build();
+    }
+
+    @DeleteMapping("/{id}/all")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Void> deleteForAll(@PathVariable Long id) {
+        notificacaoService.deleteForAll(id);
         return ResponseEntity.noContent().build();
     }
 

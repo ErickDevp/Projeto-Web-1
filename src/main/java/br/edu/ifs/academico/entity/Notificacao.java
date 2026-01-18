@@ -6,6 +6,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Table(name = "tb_notificacao")
 @Builder
@@ -22,7 +24,15 @@ public class Notificacao {
     private String mensagem;
     private String tipo;
 
+    @Column(name = "data_criacao", updatable = false)
+    private LocalDateTime dataCriacao;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_usuario")
     private Usuario usuario;
+
+    @PrePersist
+    protected void onCreate() {
+        this.dataCriacao = LocalDateTime.now();
+    }
 }

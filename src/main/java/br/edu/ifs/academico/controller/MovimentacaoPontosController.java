@@ -1,7 +1,7 @@
 package br.edu.ifs.academico.controller;
 
 import br.edu.ifs.academico.DTO.MovimentacaoPontosDTO;
-import br.edu.ifs.academico.entity.MovimentacaoPontos;
+import br.edu.ifs.academico.DTO.MovimentacaoResponseDTO;
 import br.edu.ifs.academico.service.MovimentacaoPontosService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -22,7 +22,7 @@ public class MovimentacaoPontosController {
     }
 
     @GetMapping
-    public ResponseEntity<List<MovimentacaoPontos>> buscarMovimentacoes(
+    public ResponseEntity<List<MovimentacaoResponseDTO>> buscarMovimentacoes(
             @AuthenticationPrincipal UserDetails userDetails) {
         return ResponseEntity.ok(movimentacaoService.buscarTodasMovimentacoes(userDetails.getUsername()));
     }

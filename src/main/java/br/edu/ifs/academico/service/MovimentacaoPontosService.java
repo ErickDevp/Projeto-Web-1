@@ -1,6 +1,7 @@
 package br.edu.ifs.academico.service;
 
 import br.edu.ifs.academico.DTO.MovimentacaoPontosDTO;
+import br.edu.ifs.academico.DTO.MovimentacaoResponseDTO;
 import br.edu.ifs.academico.entity.MovimentacaoPontos;
 import br.edu.ifs.academico.entity.SaldoUsuarioPrograma;
 import br.edu.ifs.academico.repository.CartaoUsuarioRepository;
@@ -35,11 +36,35 @@ public class MovimentacaoPontosService {
         }
 
         @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
-        public List<MovimentacaoPontos> buscarTodasMovimentacoes(String emailLogado) {
+        public List<MovimentacaoResponseDTO> buscarTodasMovimentacoes(String emailLogado) {
                 var usuario = usuarioRepository.findByEmail(emailLogado)
                                 .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
 
-                return movimentacaoRepository.findByUsuarioId(usuario.getId());
+                return movimentacaoRepository.findByUsuarioIdWithDetails(usuario.getId())
+                                .stream()
+                                .map(movimentacao -> new MovimentacaoResponseDTO(
+                                                movimentacao.getId(),
+                                                movimentacao.getValor(),
+                                                movimentacao.getPontos_calculados(),
+                                                movimentacao.getDataOcorrencia(),
+                                                movimentacao.getStatus() != null
+                                                                ? movimentacao.getStatus().getStatus().name()
+                                                                : null,
+                                                movimentacao.getCartao() != null ? movimentacao.getCartao().getId()
+                                                                : null,
+                                                movimentacao.getCartao() != null ? movimentacao.getCartao().getNome()
+                                                                : null,
+                                                movimentacao.getSaldo() != null
+                                                                && movimentacao.getSaldo().getPrograma() != null
+                                                                                ? movimentacao.getSaldo().getPrograma()
+                                                                                                .getId()
+                                                                                : null,
+                                                movimentacao.getSaldo() != null
+                                                                && movimentacao.getSaldo().getPrograma() != null
+                                                                                ? movimentacao.getSaldo().getPrograma()
+                                                                                                .getNome()
+                                                                                : null))
+                                .toList();
         }
 
         @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
