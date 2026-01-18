@@ -78,10 +78,12 @@ public class InicializacaoConfig {
             SaldoUsuarioPrograma saldoEsfera = getOrCreateSaldo(saldoRepository, admin, esfera);
             SaldoUsuarioPrograma saldoLatam = getOrCreateSaldo(saldoRepository, admin, latam);
 
-            CartaoUsuario cartaoVisa = getOrCreateCartao(cartaoRepository, admin, CARTAO_VISA_INFINITE, Bandeira.VISA);
+            CartaoUsuario cartaoVisa = getOrCreateCartao(cartaoRepository, admin, CARTAO_VISA_INFINITE, Bandeira.VISA,
+                    2.5d);
             CartaoUsuario cartaoMaster = getOrCreateCartao(cartaoRepository, admin, CARTAO_MASTERCARD_BLACK,
-                    Bandeira.MASTERCARD);
-            CartaoUsuario cartaoElo = getOrCreateCartao(cartaoRepository, admin, CARTAO_ELO_NANQUIM, Bandeira.ELO);
+                    Bandeira.MASTERCARD, 2.0d);
+            CartaoUsuario cartaoElo = getOrCreateCartao(cartaoRepository, admin, CARTAO_ELO_NANQUIM, Bandeira.ELO,
+                    1.2d);
 
             ensureProgramas(cartaoRepository, cartaoVisa, livelo, latam);
             ensureProgramas(cartaoRepository, cartaoMaster, esfera, livelo);
@@ -157,13 +159,13 @@ public class InicializacaoConfig {
     }
 
     private CartaoUsuario getOrCreateCartao(CartaoUsuarioRepository cartaoRepository, Usuario usuario, String nome,
-            Bandeira bandeira) {
+            Bandeira bandeira, Double multiplicadorPontos) {
         return cartaoRepository.findByNomeAndUsuarioId(nome, usuario.getId()).orElseGet(() -> {
             CartaoUsuario novoCartao = CartaoUsuario.builder()
                     .nome(nome)
                     .bandeira(bandeira)
                     .tipo(TipoCartao.CREDITO)
-                    .pontos(0d)
+                    .pontos(multiplicadorPontos)
                     .usuario(usuario)
                     .programas(new HashSet<>())
                     .build();
@@ -216,10 +218,6 @@ public class InicializacaoConfig {
         saldo.setPontos(saldo.getPontos() + pontos);
         saldoRepository.save(saldo);
 
-        cartaoRepository.findById(cartao.getId()).ifPresent(cartaoAtualizado -> {
-            Double pontosAtuais = cartaoAtualizado.getPontos() == null ? 0d : cartaoAtualizado.getPontos();
-            cartaoAtualizado.setPontos(pontosAtuais + pontos);
-            cartaoRepository.save(cartaoAtualizado);
-        });
+        // Não atualiza pontos do cartão: esse campo é o fator de multiplicação.
     }
 }
