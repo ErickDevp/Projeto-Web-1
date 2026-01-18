@@ -1,6 +1,7 @@
 package br.edu.ifs.academico.repository;
 
 import br.edu.ifs.academico.entity.CartaoUsuario;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -10,7 +11,12 @@ import java.util.Optional;
 @Repository
 public interface CartaoUsuarioRepository extends JpaRepository<CartaoUsuario, Long> {
     List<CartaoUsuario> findByUsuarioId(Long id);
+
     Optional<CartaoUsuario> findByNomeAndUsuarioId(String nome, Long usuarioId);
+
     boolean existsByProgramas_Id(Long programaId);
+
+    @EntityGraph(attributePaths = "programas")
+    Optional<CartaoUsuario> findWithProgramasById(Long id);
 
 }

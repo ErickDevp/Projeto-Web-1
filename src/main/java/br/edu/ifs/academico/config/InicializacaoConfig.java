@@ -176,19 +176,21 @@ public class InicializacaoConfig {
 
     private void ensureProgramas(CartaoUsuarioRepository cartaoRepository, CartaoUsuario cartao,
             ProgramaFidelidade... programas) {
-        boolean updated = false;
-        if (cartao.getProgramas() == null) {
-            cartao.setProgramas(new HashSet<>());
-            updated = true;
-        }
-        for (ProgramaFidelidade programa : programas) {
-            if (cartao.getProgramas().add(programa)) {
+        cartaoRepository.findWithProgramasById(cartao.getId()).ifPresent(cartaoAtualizado -> {
+            boolean updated = false;
+            if (cartaoAtualizado.getProgramas() == null) {
+                cartaoAtualizado.setProgramas(new HashSet<>());
                 updated = true;
             }
-        }
-        if (updated) {
-            cartaoRepository.save(cartao);
-        }
+            for (ProgramaFidelidade programa : programas) {
+                if (cartaoAtualizado.getProgramas().add(programa)) {
+                    updated = true;
+                }
+            }
+            if (updated) {
+                cartaoRepository.save(cartaoAtualizado);
+            }
+        });
     }
 
     private void criarMovimentacao(MovimentacaoPontosRepository movimentacaoRepository,
