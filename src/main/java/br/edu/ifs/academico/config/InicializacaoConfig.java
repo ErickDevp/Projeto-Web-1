@@ -160,12 +160,32 @@ public class InicializacaoConfig {
 
     private CartaoUsuario getOrCreateCartao(CartaoUsuarioRepository cartaoRepository, Usuario usuario, String nome,
             Bandeira bandeira, Double multiplicadorPontos) {
-        return cartaoRepository.findByNomeAndUsuarioId(nome, usuario.getId()).orElseGet(() -> {
+        return cartaoRepository.findByNomeAndUsuarioId(nome, usuario.getId()).map(cartaoExistente -> {
+            boolean updated = false;
+            if (cartaoExistente.getMultiplicadorPontos() == null
+                    || !cartaoExistente.getMultiplicadorPontos().equals(multiplicadorPontos)) {
+                cartaoExistente.setMultiplicadorPontos(multiplicadorPontos);
+                updated = true;
+            }
+            if (cartaoExistente.getBandeira() == null) {
+                cartaoExistente.setBandeira(bandeira);
+                updated = true;
+            }
+            if (cartaoExistente.getTipo() == null) {
+                cartaoExistente.setTipo(TipoCartao.CREDITO);
+                updated = true;
+            }
+            if (updated) {
+                cartaoRepository.save(cartaoExistente);
+                log.info("Cartão {} atualizado com multiplicador de pontos {}", nome, multiplicadorPontos);
+            }
+            return cartaoExistente;
+        }).orElseGet(() -> {
             CartaoUsuario novoCartao = CartaoUsuario.builder()
                     .nome(nome)
                     .bandeira(bandeira)
                     .tipo(TipoCartao.CREDITO)
-                    .pontos(multiplicadorPontos)
+                    .multiplicadorPontos(multiplicadorPontos)
                     .usuario(usuario)
                     .programas(new HashSet<>())
                     .build();
@@ -219,7 +239,5 @@ public class InicializacaoConfig {
 
         saldo.setPontos(saldo.getPontos() + pontos);
         saldoRepository.save(saldo);
-
-        // Não atualiza pontos do cartão: esse campo é o fator de multiplicação.
     }
 }

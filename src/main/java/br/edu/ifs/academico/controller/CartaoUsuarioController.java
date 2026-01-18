@@ -1,6 +1,7 @@
 package br.edu.ifs.academico.controller;
 
 import br.edu.ifs.academico.DTO.CartaoUsuarioDTO;
+import br.edu.ifs.academico.DTO.CartaoUsuarioResponseDTO;
 import br.edu.ifs.academico.entity.CartaoUsuario;
 import br.edu.ifs.academico.service.CartaoUsuarioService;
 import org.springframework.http.ResponseEntity;
@@ -9,6 +10,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/cartao")
@@ -23,9 +25,20 @@ public class CartaoUsuarioController {
 
     // Buscar todos os cartões de um usuário
     @GetMapping
-    public ResponseEntity<List<CartaoUsuario>> buscarMeusCartoes(
+    public ResponseEntity<List<CartaoUsuarioResponseDTO>> buscarMeusCartoes(
             @AuthenticationPrincipal UserDetails userDetails) {
-        return ResponseEntity.ok(cartaoService.buscarTodosCartoes(userDetails.getUsername()));
+        List<CartaoUsuario> cartoes = cartaoService.buscarTodosCartoes(userDetails.getUsername());
+        List<CartaoUsuarioResponseDTO> response = cartoes.stream()
+                .map(cartao -> new CartaoUsuarioResponseDTO(
+                        cartao.getId(),
+                        cartao.getNome(),
+                        cartao.getBandeira(),
+                        cartao.getTipo(),
+                        cartao.getMultiplicadorPontos(),
+                        cartao.getMultiplicadorPontos(),
+                        cartao.getProgramas().stream().map(p -> p.getId()).collect(Collectors.toSet())))
+                .toList();
+        return ResponseEntity.ok(response);
     }
 
     // Criar um novo cartão vinculado ao usuário

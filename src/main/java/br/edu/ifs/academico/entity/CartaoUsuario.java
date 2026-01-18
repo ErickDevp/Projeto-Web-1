@@ -37,7 +37,8 @@ public class CartaoUsuario {
     @Enumerated(EnumType.STRING)
     private TipoCartao tipo;
 
-    private Double pontos;
+    @Column(name = "pontos")
+    private Double multiplicadorPontos;
 
     @Override
     public boolean equals(Object o) {

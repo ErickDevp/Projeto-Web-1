@@ -50,13 +50,19 @@ public class CartaoUsuarioService {
                         .orElseThrow(() -> new RuntimeException("Programa Fidelidade não encontrado: " + id)))
                 .collect(Collectors.toSet());
 
+        // valida multiplicadorPontos
+        if (cartaoDTO.multiplicadorPontos() == null || cartaoDTO.multiplicadorPontos() <= 0
+                || cartaoDTO.multiplicadorPontos() > 10) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "multiplicadorPontos deve ser > 0 e <= 10");
+        }
+
         var entity = CartaoUsuario.builder()
                 .usuario(usuario)
                 .programas(programas)
                 .nome(cartaoDTO.nome())
                 .bandeira(cartaoDTO.bandeira())
                 .tipo(cartaoDTO.tipo())
-                .pontos(cartaoDTO.pontos())
+                .multiplicadorPontos(cartaoDTO.multiplicadorPontos())
                 .build();
 
         return cartaoRepository.save(entity).getId();
@@ -77,8 +83,12 @@ public class CartaoUsuarioService {
             cartao.setBandeira(cartaoDTO.bandeira());
         if (cartaoDTO.tipo() != null)
             cartao.setTipo(cartaoDTO.tipo());
-        if (cartaoDTO.pontos() != null)
-            cartao.setPontos(cartaoDTO.pontos());
+        if (cartaoDTO.multiplicadorPontos() != null) {
+            if (cartaoDTO.multiplicadorPontos() <= 0 || cartaoDTO.multiplicadorPontos() > 10) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "multiplicadorPontos deve ser > 0 e <= 10");
+            }
+            cartao.setMultiplicadorPontos(cartaoDTO.multiplicadorPontos());
+        }
         if (cartaoDTO.programaIds() != null) {
             Set<ProgramaFidelidade> programas = cartaoDTO.programaIds().stream()
                     .map(idPrograma -> programaRepository.findById(idPrograma)

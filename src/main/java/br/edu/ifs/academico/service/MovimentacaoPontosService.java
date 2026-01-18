@@ -73,7 +73,7 @@ public class MovimentacaoPontosService {
                                 });
 
                 int pontosCalculados = dto.valor()
-                                .multiply(BigDecimal.valueOf(cartao.getPontos()))
+                                .multiply(BigDecimal.valueOf(cartao.getMultiplicadorPontos()))
                                 .setScale(0, RoundingMode.DOWN) // ou HALF_UP
                                 .intValue();
 
@@ -113,7 +113,7 @@ public class MovimentacaoPontosService {
 
                         // Recalcular pontos
                         int novosPontos = dto.valor()
-                                        .multiply(BigDecimal.valueOf(cartao.getPontos()))
+                                        .multiply(BigDecimal.valueOf(cartao.getMultiplicadorPontos()))
                                         .setScale(0, RoundingMode.DOWN)
                                         .intValue();
 
