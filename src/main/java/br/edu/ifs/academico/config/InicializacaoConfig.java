@@ -4,6 +4,7 @@ import br.edu.ifs.academico.entity.CartaoUsuario;
 import br.edu.ifs.academico.entity.MovimentacaoPontos;
 import br.edu.ifs.academico.entity.ProgramaFidelidade;
 import br.edu.ifs.academico.entity.SaldoUsuarioPrograma;
+import br.edu.ifs.academico.entity.StatusMovimentacao;
 import br.edu.ifs.academico.entity.Usuario;
 import br.edu.ifs.academico.entity.enums.Bandeira;
 import br.edu.ifs.academico.entity.enums.Role;
@@ -12,6 +13,7 @@ import br.edu.ifs.academico.repository.CartaoUsuarioRepository;
 import br.edu.ifs.academico.repository.MovimentacaoPontosRepository;
 import br.edu.ifs.academico.repository.ProgramaFidelidadeRepository;
 import br.edu.ifs.academico.repository.SaldoUsuarioProgramaRepository;
+import br.edu.ifs.academico.repository.StatusMovimentacaoRepository;
 import br.edu.ifs.academico.repository.UsuarioRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,8 +34,13 @@ public class InicializacaoConfig {
 
     private static final String ADMIN_EMAIL = "admin@milhas.com";
     private static final String ADMIN_SENHA = "123456";
-    private static final String PROGRAMA_PADRAO = "Programa Milhas Padrão";
-    private static final String CARTAO_PADRAO = "Cartão Padrão";
+    private static final String PROGRAMA_LIVELO = "Livelo";
+    private static final String PROGRAMA_ESFERA = "Esfera";
+    private static final String PROGRAMA_LATAM_PASS = "Latam Pass";
+
+    private static final String CARTAO_VISA_INFINITE = "Cartão A (Visa Infinite)";
+    private static final String CARTAO_MASTERCARD_BLACK = "Cartão B (Mastercard Black)";
+    private static final String CARTAO_ELO_NANQUIM = "Cartão C (Elo Nanquim)";
 
     @Bean
     CommandLineRunner init(UsuarioRepository usuarioRepository,
@@ -41,6 +48,7 @@ public class InicializacaoConfig {
             CartaoUsuarioRepository cartaoRepository,
             SaldoUsuarioProgramaRepository saldoRepository,
             MovimentacaoPontosRepository movimentacaoRepository,
+            StatusMovimentacaoRepository statusRepository,
             PasswordEncoder encoder) {
         return args -> {
 
@@ -59,62 +67,159 @@ public class InicializacaoConfig {
                 log.info("ADMIN criado automaticamente!");
             }
 
-            ProgramaFidelidade programa = programaRepository.findByNome(PROGRAMA_PADRAO).orElse(null);
-            if (programa == null) {
-                ProgramaFidelidade novoPrograma = ProgramaFidelidade.builder()
-                        .nome(PROGRAMA_PADRAO)
-                        .descricao("Programa padrão criado na inicialização")
-                        .build();
-                log.info("Programa padrão criado!");
-                programa = programaRepository.save(novoPrograma);
-            }
+            ProgramaFidelidade livelo = getOrCreatePrograma(programaRepository, PROGRAMA_LIVELO,
+                    "Programa de fidelidade Livelo");
+            ProgramaFidelidade esfera = getOrCreatePrograma(programaRepository, PROGRAMA_ESFERA,
+                    "Programa de fidelidade Esfera (Santander)");
+            ProgramaFidelidade latam = getOrCreatePrograma(programaRepository, PROGRAMA_LATAM_PASS,
+                    "Programa de fidelidade Latam Pass");
 
-            SaldoUsuarioPrograma saldo = saldoRepository
-                    .findByUsuarioIdAndProgramaId(admin.getId(), programa.getId())
-                    .orElse(null);
-            if (saldo == null) {
-                SaldoUsuarioPrograma novoSaldo = SaldoUsuarioPrograma.builder()
-                        .usuario(admin)
-                        .programa(programa)
-                        .pontos(0)
-                        .build();
-                log.info("Saldo padrão criado!");
-                saldo = saldoRepository.save(novoSaldo);
-            }
+            SaldoUsuarioPrograma saldoLivelo = getOrCreateSaldo(saldoRepository, admin, livelo);
+            SaldoUsuarioPrograma saldoEsfera = getOrCreateSaldo(saldoRepository, admin, esfera);
+            SaldoUsuarioPrograma saldoLatam = getOrCreateSaldo(saldoRepository, admin, latam);
 
-            CartaoUsuario cartao = cartaoRepository
-                    .findByNomeAndUsuarioId(CARTAO_PADRAO, admin.getId())
-                    .orElse(null);
-            if (cartao == null) {
-                CartaoUsuario novoCartao = CartaoUsuario.builder()
-                        .nome(CARTAO_PADRAO)
-                        .bandeira(Bandeira.VISA)
-                        .tipo(TipoCartao.CREDITO)
-                        .pontos(0d)
-                        .usuario(admin)
-                        .programas(new HashSet<>())
-                        .build();
-                novoCartao.getProgramas().add(programa);
-                log.info("Cartão padrão criado!");
-                cartao = cartaoRepository.save(novoCartao);
-            }
+            CartaoUsuario cartaoVisa = getOrCreateCartao(cartaoRepository, admin, CARTAO_VISA_INFINITE, Bandeira.VISA);
+            CartaoUsuario cartaoMaster = getOrCreateCartao(cartaoRepository, admin, CARTAO_MASTERCARD_BLACK,
+                    Bandeira.MASTERCARD);
+            CartaoUsuario cartaoElo = getOrCreateCartao(cartaoRepository, admin, CARTAO_ELO_NANQUIM, Bandeira.ELO);
+
+            ensureProgramas(cartaoRepository, cartaoVisa, livelo, latam);
+            ensureProgramas(cartaoRepository, cartaoMaster, esfera, livelo);
+            ensureProgramas(cartaoRepository, cartaoElo, latam);
 
             if (movimentacaoRepository.findByUsuarioId(admin.getId()).isEmpty()) {
-                MovimentacaoPontos movimentacao = MovimentacaoPontos.builder()
-                        .valor(BigDecimal.valueOf(1000.00))
-                        .pontos_calculados(1000)
-                        .dataOcorrencia(LocalDate.now())
-                        .usuario(admin)
-                        .saldo(saldo)
-                        .cartao(cartao)
-                        .build();
-                movimentacaoRepository.save(movimentacao);
-                saldo.setPontos(saldo.getPontos() + movimentacao.getPontos_calculados());
-                saldoRepository.save(saldo);
-                log.info("Movimentação padrão criada e saldo atualizado!");
+                criarMovimentacao(movimentacaoRepository, statusRepository, saldoRepository, cartaoRepository,
+                        admin, saldoLivelo, cartaoVisa, BigDecimal.valueOf(12990.00), 12990,
+                        LocalDate.now().minusMonths(3).withDayOfMonth(5),
+                        br.edu.ifs.academico.entity.enums.StatusMovimentacao.CREDITADO,
+                        "Compra grande no Visa Infinite");
+
+                criarMovimentacao(movimentacaoRepository, statusRepository, saldoRepository, cartaoRepository,
+                        admin, saldoEsfera, cartaoMaster, BigDecimal.valueOf(3290.00), 3290,
+                        LocalDate.now().minusMonths(2).withDayOfMonth(12),
+                        br.edu.ifs.academico.entity.enums.StatusMovimentacao.CREDITADO,
+                        "Compra recorrente no Mastercard Black");
+
+                criarMovimentacao(movimentacaoRepository, statusRepository, saldoRepository, cartaoRepository,
+                        admin, saldoEsfera, cartaoMaster, BigDecimal.valueOf(1850.00), 1850,
+                        LocalDate.now().minusMonths(1).withDayOfMonth(3),
+                        br.edu.ifs.academico.entity.enums.StatusMovimentacao.CREDITADO,
+                        "Compra de rotina no Mastercard Black");
+
+                criarMovimentacao(movimentacaoRepository, statusRepository, saldoRepository, cartaoRepository,
+                        admin, saldoLivelo, cartaoVisa, BigDecimal.valueOf(2250.00), 2250,
+                        LocalDate.now().minusMonths(0).withDayOfMonth(8),
+                        br.edu.ifs.academico.entity.enums.StatusMovimentacao.PENDENTE,
+                        "Compra recente aguardando crédito");
+
+                criarMovimentacao(movimentacaoRepository, statusRepository, saldoRepository, cartaoRepository,
+                        admin, saldoLatam, cartaoElo, BigDecimal.valueOf(600.00), 600,
+                        LocalDate.now().minusMonths(1).withDayOfMonth(22),
+                        br.edu.ifs.academico.entity.enums.StatusMovimentacao.CREDITADO,
+                        "Compra pequena no Elo Nanquim");
+
+                criarMovimentacao(movimentacaoRepository, statusRepository, saldoRepository, cartaoRepository,
+                        admin, saldoLatam, cartaoElo, BigDecimal.valueOf(320.00), 320,
+                        LocalDate.now().minusMonths(3).withDayOfMonth(19),
+                        br.edu.ifs.academico.entity.enums.StatusMovimentacao.CREDITADO,
+                        "Uso pouco frequente do Elo Nanquim");
+
+                log.info("Movimentações de exemplo criadas e saldos atualizados!");
             } else {
                 log.info("Usuário admin já possui movimentações, não será criada outra.");
             }
         };
+    }
+
+    private ProgramaFidelidade getOrCreatePrograma(ProgramaFidelidadeRepository programaRepository, String nome,
+            String descricao) {
+        return programaRepository.findByNome(nome).orElseGet(() -> {
+            ProgramaFidelidade novoPrograma = ProgramaFidelidade.builder()
+                    .nome(nome)
+                    .descricao(descricao)
+                    .build();
+            log.info("Programa {} criado!", nome);
+            return programaRepository.save(novoPrograma);
+        });
+    }
+
+    private SaldoUsuarioPrograma getOrCreateSaldo(SaldoUsuarioProgramaRepository saldoRepository, Usuario usuario,
+            ProgramaFidelidade programa) {
+        return saldoRepository.findByUsuarioIdAndProgramaId(usuario.getId(), programa.getId()).orElseGet(() -> {
+            SaldoUsuarioPrograma novoSaldo = SaldoUsuarioPrograma.builder()
+                    .usuario(usuario)
+                    .programa(programa)
+                    .pontos(0)
+                    .build();
+            log.info("Saldo criado para o programa {}", programa.getNome());
+            return saldoRepository.save(novoSaldo);
+        });
+    }
+
+    private CartaoUsuario getOrCreateCartao(CartaoUsuarioRepository cartaoRepository, Usuario usuario, String nome,
+            Bandeira bandeira) {
+        return cartaoRepository.findByNomeAndUsuarioId(nome, usuario.getId()).orElseGet(() -> {
+            CartaoUsuario novoCartao = CartaoUsuario.builder()
+                    .nome(nome)
+                    .bandeira(bandeira)
+                    .tipo(TipoCartao.CREDITO)
+                    .pontos(0d)
+                    .usuario(usuario)
+                    .programas(new HashSet<>())
+                    .build();
+            log.info("Cartão {} criado!", nome);
+            return cartaoRepository.save(novoCartao);
+        });
+    }
+
+    private void ensureProgramas(CartaoUsuarioRepository cartaoRepository, CartaoUsuario cartao,
+            ProgramaFidelidade... programas) {
+        boolean updated = false;
+        if (cartao.getProgramas() == null) {
+            cartao.setProgramas(new HashSet<>());
+            updated = true;
+        }
+        for (ProgramaFidelidade programa : programas) {
+            if (cartao.getProgramas().add(programa)) {
+                updated = true;
+            }
+        }
+        if (updated) {
+            cartaoRepository.save(cartao);
+        }
+    }
+
+    private void criarMovimentacao(MovimentacaoPontosRepository movimentacaoRepository,
+            StatusMovimentacaoRepository statusRepository, SaldoUsuarioProgramaRepository saldoRepository,
+            CartaoUsuarioRepository cartaoRepository, Usuario usuario, SaldoUsuarioPrograma saldo,
+            CartaoUsuario cartao, BigDecimal valor, Integer pontos, LocalDate data,
+            br.edu.ifs.academico.entity.enums.StatusMovimentacao statusEnum, String motivo) {
+        MovimentacaoPontos movimentacao = MovimentacaoPontos.builder()
+                .valor(valor)
+                .pontos_calculados(pontos)
+                .dataOcorrencia(data)
+                .usuario(usuario)
+                .saldo(saldo)
+                .cartao(cartao)
+                .build();
+
+        StatusMovimentacao status = StatusMovimentacao.builder()
+                .status(statusEnum)
+                .motivo(motivo)
+                .movimentacao(movimentacao)
+                .build();
+
+        movimentacao.setStatus(status);
+        movimentacaoRepository.save(movimentacao);
+        statusRepository.save(status);
+
+        saldo.setPontos(saldo.getPontos() + pontos);
+        saldoRepository.save(saldo);
+
+        cartaoRepository.findById(cartao.getId()).ifPresent(cartaoAtualizado -> {
+            Double pontosAtuais = cartaoAtualizado.getPontos() == null ? 0d : cartaoAtualizado.getPontos();
+            cartaoAtualizado.setPontos(pontosAtuais + pontos);
+            cartaoRepository.save(cartaoAtualizado);
+        });
     }
 }
