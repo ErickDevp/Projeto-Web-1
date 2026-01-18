@@ -109,7 +109,9 @@ public class InicializacaoConfig {
                         .cartao(cartao)
                         .build();
                 movimentacaoRepository.save(movimentacao);
-                log.info("Movimentação padrão criada!");
+                saldo.setPontos(saldo.getPontos() + movimentacao.getPontos_calculados());
+                saldoRepository.save(saldo);
+                log.info("Movimentação padrão criada e saldo atualizado!");
             } else {
                 log.info("Usuário admin já possui movimentações, não será criada outra.");
             }

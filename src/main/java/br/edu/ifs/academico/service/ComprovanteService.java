@@ -1,5 +1,6 @@
 package br.edu.ifs.academico.service;
 
+import br.edu.ifs.academico.DTO.ArquivoBytesDTO;
 import br.edu.ifs.academico.DTO.ComprovanteDTO;
 import br.edu.ifs.academico.entity.Comprovante;
 import br.edu.ifs.academico.repository.ComprovanteRepository;
@@ -133,5 +134,31 @@ public class ComprovanteService {
         }
 
         comprovanteRepository.deleteById(id);
+    }
+
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
+    public ArquivoBytesDTO lerBytesComprovante(Long id, String emailLogado) {
+
+        var comprovante = comprovanteRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Comprovante não encontrado"));
+
+        if (!comprovante.getMovimentacao().getUsuario().getEmail().equals(emailLogado)) {
+            throw new RuntimeException("Você não pode acessar comprovante de outro usuário");
+        }
+
+        try {
+            Path path = Paths.get(comprovante.getCaminho());
+            byte[] bytes = Files.readAllBytes(path);
+            String contentType = comprovante.getTipo_arq();
+            if (contentType == null) {
+                contentType = Files.probeContentType(path);
+            }
+            if (contentType == null) {
+                contentType = "application/octet-stream";
+            }
+            return new ArquivoBytesDTO(bytes, contentType);
+        } catch (IOException e) {
+            throw new RuntimeException("Erro ao ler arquivo: " + e.getMessage(), e);
+        }
     }
 }

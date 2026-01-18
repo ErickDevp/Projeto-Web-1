@@ -24,6 +24,11 @@ public class NotificacaoController {
         return ResponseEntity.ok(notificacaoService.buscarNotificacoes());
     }
 
+    @GetMapping("/publicas")
+    public ResponseEntity<List<Notificacao>> buscarNotificacoesPublicas() {
+        return ResponseEntity.ok(notificacaoService.buscarNotificacoesPublicas());
+    }
+
     @PostMapping("/criar")
     public ResponseEntity<String> criarNotificacao(@RequestBody NotificacaoDTO notificacaoDTO) {
         notificacaoService.criarNotificacao(notificacaoDTO);

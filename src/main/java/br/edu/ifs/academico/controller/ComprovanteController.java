@@ -42,4 +42,13 @@ public class ComprovanteController {
         comprovanteService.apagarComprovante(id, userDetails.getUsername());
         return ResponseEntity.noContent().build();
     }
+
+    @GetMapping("/{id}/arquivo")
+    public ResponseEntity<byte[]> lerComprovante(@PathVariable Long id,
+            @AuthenticationPrincipal UserDetails userDetails) {
+        var arquivo = comprovanteService.lerBytesComprovante(id, userDetails.getUsername());
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType(arquivo.contentType()))
+                .body(arquivo.bytes());
+    }
 }

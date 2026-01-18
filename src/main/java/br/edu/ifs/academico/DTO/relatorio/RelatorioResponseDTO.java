@@ -6,5 +6,6 @@ public record RelatorioResponseDTO(
                 List<PontosPorCartaoDTO> pontosPorCartao,
                 List<HistoricoMovimentacaoDTO> historico,
                 List<EvolucaoMensalDTO> evolucaoMensal,
+                Long saldoGlobal,
                 Double prazoMedio) {
 }

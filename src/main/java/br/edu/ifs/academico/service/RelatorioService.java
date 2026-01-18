@@ -43,6 +43,10 @@ public class RelatorioService {
         var cartoes = cartaoRepo.findByUsuarioId(usuario.getId());
         var saldos = saldoRepo.findByUsuarioId(usuario.getId());
 
+        long saldoGlobal = saldos.stream()
+                .mapToLong(s -> s.getPontos() != null ? s.getPontos() : 0)
+                .sum();
+
         List<PontosPorCartaoDTO> pontosPorCartao = cartoes.stream().map(cartao -> {
 
             long total = saldos.stream()
@@ -89,6 +93,7 @@ public class RelatorioService {
                 pontosPorCartao,
                 historico,
                 evolucaoMensal,
+                saldoGlobal,
                 0.0 // sem campo dataRecebimento
         );
     }
@@ -129,6 +134,10 @@ public class RelatorioService {
                     .append(e.mes()).append(";")
                     .append(e.totalPontos()).append("\n");
         });
+
+        sb.append("\n=== SALDO GLOBAL ===\n");
+        sb.append("Total Pontos;\n");
+        sb.append(rel.saldoGlobal()).append("\n");
 
         return sb.toString().getBytes();
     }
@@ -206,6 +215,12 @@ public class RelatorioService {
             });
 
             doc.add(tabelaEvolucao);
+
+            doc.add(new Paragraph("\n"));
+
+            // ------------------ SALDO GLOBAL ------------------
+            doc.add(new Paragraph("Saldo Global").setBold().setFontSize(14));
+            doc.add(new Paragraph(String.valueOf(rel.saldoGlobal())));
 
             doc.close();
             return baos.toByteArray();

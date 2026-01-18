@@ -22,6 +22,11 @@ public class NotificacaoService {
         return notificacaoRepository.findAll();
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
+    public List<Notificacao> buscarNotificacoesPublicas() {
+        return notificacaoRepository.findByUsuarioIsNull();
+    }
+
     @PreAuthorize("hasAnyRole('ADMIN')")
     public Long criarNotificacao(NotificacaoDTO notificacaoDTO) {
         Notificacao entity = Notificacao.builder()

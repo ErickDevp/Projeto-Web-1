@@ -37,6 +37,8 @@ public class Usuario {
     @Column(nullable = false, updatable = false)
     private LocalDateTime criado_em;
 
+    private String caminhoFoto;
+
     @PrePersist
     protected void onCreate() {
         this.criado_em = LocalDateTime.now();
@@ -47,6 +49,5 @@ public class Usuario {
 
     @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<SaldoUsuarioPrograma> saldo;
-
 
 }
