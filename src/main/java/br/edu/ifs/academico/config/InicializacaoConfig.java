@@ -32,6 +32,30 @@ import java.util.HashSet;
 @SuppressWarnings("null")
 public class InicializacaoConfig {
 
+    private final UsuarioRepository usuarioRepository;
+    private final ProgramaFidelidadeRepository programaRepository;
+    private final CartaoUsuarioRepository cartaoRepository;
+    private final SaldoUsuarioProgramaRepository saldoRepository;
+    private final MovimentacaoPontosRepository movimentacaoRepository;
+    private final StatusMovimentacaoRepository statusRepository;
+    private final PasswordEncoder encoder;
+
+    public InicializacaoConfig(UsuarioRepository usuarioRepository,
+            ProgramaFidelidadeRepository programaRepository,
+            CartaoUsuarioRepository cartaoRepository,
+            SaldoUsuarioProgramaRepository saldoRepository,
+            MovimentacaoPontosRepository movimentacaoRepository,
+            StatusMovimentacaoRepository statusRepository,
+            PasswordEncoder encoder) {
+        this.usuarioRepository = usuarioRepository;
+        this.programaRepository = programaRepository;
+        this.cartaoRepository = cartaoRepository;
+        this.saldoRepository = saldoRepository;
+        this.movimentacaoRepository = movimentacaoRepository;
+        this.statusRepository = statusRepository;
+        this.encoder = encoder;
+    }
+
     private static final Logger log = LoggerFactory.getLogger(InicializacaoConfig.class);
 
     private static final String ADMIN_EMAIL = "admin@milhas.com";
@@ -45,15 +69,17 @@ public class InicializacaoConfig {
     private static final String CARTAO_ELO_NANQUIM = "Cartão C (Elo Nanquim)";
 
     @Bean
-    CommandLineRunner init(UsuarioRepository usuarioRepository,
-            ProgramaFidelidadeRepository programaRepository,
-            CartaoUsuarioRepository cartaoRepository,
-            SaldoUsuarioProgramaRepository saldoRepository,
-            MovimentacaoPontosRepository movimentacaoRepository,
-            StatusMovimentacaoRepository statusRepository,
-            PasswordEncoder encoder) {
+    CommandLineRunner init() {
         return args -> {
+            // 1. Criação dos Programas de Fidelidade (PAI)
+            ProgramaFidelidade livelo = getOrCreatePrograma(programaRepository, PROGRAMA_LIVELO,
+                    "Programa de fidelidade Livelo");
+            ProgramaFidelidade esfera = getOrCreatePrograma(programaRepository, PROGRAMA_ESFERA,
+                    "Programa de fidelidade Esfera (Santander)");
+            ProgramaFidelidade latam = getOrCreatePrograma(programaRepository, PROGRAMA_LATAM_PASS,
+                    "Programa de fidelidade Latam Pass");
 
+            // 2. Criação do Usuário Admin (PAI)
             Usuario admin;
             if (usuarioRepository.existsByEmail(ADMIN_EMAIL)) {
                 admin = usuarioRepository.findByEmail(ADMIN_EMAIL)
@@ -69,17 +95,12 @@ public class InicializacaoConfig {
                 log.info("ADMIN criado automaticamente!");
             }
 
-            ProgramaFidelidade livelo = getOrCreatePrograma(programaRepository, PROGRAMA_LIVELO,
-                    "Programa de fidelidade Livelo");
-            ProgramaFidelidade esfera = getOrCreatePrograma(programaRepository, PROGRAMA_ESFERA,
-                    "Programa de fidelidade Esfera (Santander)");
-            ProgramaFidelidade latam = getOrCreatePrograma(programaRepository, PROGRAMA_LATAM_PASS,
-                    "Programa de fidelidade Latam Pass");
-
+            // 3. Criação dos Saldos (FILHO de Usuario e Programa)
             SaldoUsuarioPrograma saldoLivelo = getOrCreateSaldo(saldoRepository, admin, livelo);
             SaldoUsuarioPrograma saldoEsfera = getOrCreateSaldo(saldoRepository, admin, esfera);
             SaldoUsuarioPrograma saldoLatam = getOrCreateSaldo(saldoRepository, admin, latam);
 
+            // 4. Criação dos Cartões (FILHO de Usuario)
             CartaoUsuario cartaoVisa = getOrCreateCartao(cartaoRepository, admin, CARTAO_VISA_INFINITE, Bandeira.VISA,
                     2.5d);
             CartaoUsuario cartaoMaster = getOrCreateCartao(cartaoRepository, admin, CARTAO_MASTERCARD_BLACK,
@@ -87,42 +108,50 @@ public class InicializacaoConfig {
             CartaoUsuario cartaoElo = getOrCreateCartao(cartaoRepository, admin, CARTAO_ELO_NANQUIM, Bandeira.ELO,
                     1.2d);
 
+            // 5. Associação dos Programas aos Cartões
             ensureProgramas(cartaoRepository, cartaoVisa, livelo, latam);
             ensureProgramas(cartaoRepository, cartaoMaster, esfera, livelo);
             ensureProgramas(cartaoRepository, cartaoElo, latam);
 
+            // 6. Criação das Movimentações (FILHO de Usuario, Saldo, Cartão)
             if (movimentacaoRepository.findByUsuarioId(admin.getId()).isEmpty()) {
-                criarMovimentacao(movimentacaoRepository, statusRepository, saldoRepository, cartaoRepository,
+                criarMovimentacaoSeNaoExiste(movimentacaoRepository, statusRepository, saldoRepository,
+                        cartaoRepository,
                         admin, saldoLivelo, cartaoVisa, BigDecimal.valueOf(12990.00), 12990,
                         LocalDate.now().minusMonths(3).withDayOfMonth(5),
                         br.edu.ifs.academico.entity.enums.StatusMovimentacao.CREDITADO,
                         "Compra grande no Visa Infinite");
 
-                criarMovimentacao(movimentacaoRepository, statusRepository, saldoRepository, cartaoRepository,
+                criarMovimentacaoSeNaoExiste(movimentacaoRepository, statusRepository, saldoRepository,
+                        cartaoRepository,
                         admin, saldoEsfera, cartaoMaster, BigDecimal.valueOf(3290.00), 3290,
                         LocalDate.now().minusMonths(2).withDayOfMonth(12),
                         br.edu.ifs.academico.entity.enums.StatusMovimentacao.CREDITADO,
                         "Compra recorrente no Mastercard Black");
 
-                criarMovimentacao(movimentacaoRepository, statusRepository, saldoRepository, cartaoRepository,
+                criarMovimentacaoSeNaoExiste(movimentacaoRepository, statusRepository, saldoRepository,
+                        cartaoRepository,
                         admin, saldoEsfera, cartaoMaster, BigDecimal.valueOf(1850.00), 1850,
                         LocalDate.now().minusMonths(1).withDayOfMonth(3),
                         br.edu.ifs.academico.entity.enums.StatusMovimentacao.CREDITADO,
                         "Compra de rotina no Mastercard Black");
 
-                criarMovimentacao(movimentacaoRepository, statusRepository, saldoRepository, cartaoRepository,
+                criarMovimentacaoSeNaoExiste(movimentacaoRepository, statusRepository, saldoRepository,
+                        cartaoRepository,
                         admin, saldoLivelo, cartaoVisa, BigDecimal.valueOf(2250.00), 2250,
                         LocalDate.now().minusMonths(0).withDayOfMonth(8),
                         br.edu.ifs.academico.entity.enums.StatusMovimentacao.PENDENTE,
                         "Compra recente aguardando crédito");
 
-                criarMovimentacao(movimentacaoRepository, statusRepository, saldoRepository, cartaoRepository,
+                criarMovimentacaoSeNaoExiste(movimentacaoRepository, statusRepository, saldoRepository,
+                        cartaoRepository,
                         admin, saldoLatam, cartaoElo, BigDecimal.valueOf(600.00), 600,
                         LocalDate.now().minusMonths(1).withDayOfMonth(22),
                         br.edu.ifs.academico.entity.enums.StatusMovimentacao.CREDITADO,
                         "Compra pequena no Elo Nanquim");
 
-                criarMovimentacao(movimentacaoRepository, statusRepository, saldoRepository, cartaoRepository,
+                criarMovimentacaoSeNaoExiste(movimentacaoRepository, statusRepository, saldoRepository,
+                        cartaoRepository,
                         admin, saldoLatam, cartaoElo, BigDecimal.valueOf(320.00), 320,
                         LocalDate.now().minusMonths(3).withDayOfMonth(19),
                         br.edu.ifs.academico.entity.enums.StatusMovimentacao.CREDITADO,
@@ -196,6 +225,31 @@ public class InicializacaoConfig {
         });
     }
 
+    // Nova função para criar movimentação apenas se não existir (verificação por
+    // campos principais)
+    private void criarMovimentacaoSeNaoExiste(MovimentacaoPontosRepository movimentacaoRepository,
+            StatusMovimentacaoRepository statusRepository, SaldoUsuarioProgramaRepository saldoRepository,
+            CartaoUsuarioRepository cartaoRepository, Usuario usuario, SaldoUsuarioPrograma saldo,
+            CartaoUsuario cartao, BigDecimal valor, Integer pontos, LocalDate data,
+            br.edu.ifs.academico.entity.enums.StatusMovimentacao statusEnum, String motivo) {
+        // Exemplo de verificação: não criar se já existe movimentação igual para o
+        // usuário, saldo, cartao, valor, data
+        boolean exists = movimentacaoRepository.findByUsuarioId(usuario.getId()).stream()
+                .anyMatch(m -> m.getSaldo().getId().equals(saldo.getId())
+                        && m.getCartao().getId().equals(cartao.getId())
+                        && m.getValor().compareTo(valor) == 0
+                        && m.getPontos_calculados().equals(pontos)
+                        && m.getDataOcorrencia().equals(data)
+                        && m.getStatus() != null && m.getStatus().getStatus() == statusEnum
+                        && m.getStatus().getMotivo().equals(motivo));
+        if (!exists) {
+            criarMovimentacao(movimentacaoRepository, statusRepository, saldoRepository, cartaoRepository, usuario,
+                    saldo, cartao, valor, pontos, data, statusEnum, motivo);
+        } else {
+            log.info("Movimentação já existe para {} em {}.", usuario.getEmail(), data);
+        }
+    }
+
     private void ensureProgramas(CartaoUsuarioRepository cartaoRepository, CartaoUsuario cartao,
             ProgramaFidelidade... programas) {
         cartaoRepository.findWithProgramasById(cartao.getId()).ifPresent(cartaoAtualizado -> {
@@ -220,6 +274,7 @@ public class InicializacaoConfig {
             CartaoUsuarioRepository cartaoRepository, Usuario usuario, SaldoUsuarioPrograma saldo,
             CartaoUsuario cartao, BigDecimal valor, Integer pontos, LocalDate data,
             br.edu.ifs.academico.entity.enums.StatusMovimentacao statusEnum, String motivo) {
+        // 1. Cria o status e salva primeiro
         MovimentacaoPontos movimentacao = MovimentacaoPontos.builder()
                 .valor(valor)
                 .pontos_calculados(pontos)
@@ -232,12 +287,12 @@ public class InicializacaoConfig {
         StatusMovimentacao status = StatusMovimentacao.builder()
                 .status(statusEnum)
                 .motivo(motivo)
-                .movimentacao(movimentacao)
                 .build();
 
+        status = statusRepository.save(status); // salva status primeiro
         movimentacao.setStatus(status);
-        movimentacaoRepository.save(movimentacao);
-        statusRepository.save(status);
+        status.setMovimentacao(movimentacao); // bidirecional
+        movimentacaoRepository.save(movimentacao); // Cascade.ALL já cobre status, mas garantimos ordem
 
         saldo.setPontos(saldo.getPontos() + pontos);
         saldoRepository.save(saldo);
