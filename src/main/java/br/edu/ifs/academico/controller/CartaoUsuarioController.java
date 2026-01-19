@@ -14,7 +14,6 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/cartao")
-@SuppressWarnings("null")
 public class CartaoUsuarioController {
 
     private final CartaoUsuarioService cartaoService;

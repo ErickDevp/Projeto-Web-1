@@ -12,7 +12,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/movimentacao")
-@SuppressWarnings("null")
 public class MovimentacaoPontosController {
 
     private final MovimentacaoPontosService movimentacaoService;

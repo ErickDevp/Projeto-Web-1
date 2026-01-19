@@ -19,6 +19,8 @@ public class StatusMovimentacao {
     @Column(name = "id_status")
     private Long id;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status_movimentacao")
     private br.edu.ifs.academico.entity.enums.StatusMovimentacao status;
     private String motivo;
 

@@ -13,7 +13,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/notificacao")
-@SuppressWarnings("null")
 public class NotificacaoController {
 
     private final NotificacaoService notificacaoService;
