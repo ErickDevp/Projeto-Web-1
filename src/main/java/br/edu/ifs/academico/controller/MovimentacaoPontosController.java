@@ -27,10 +27,11 @@ public class MovimentacaoPontosController {
     }
 
     @PostMapping("/criar")
-    public ResponseEntity<String> criarMovimentacao(@RequestBody MovimentacaoPontosDTO movimentacaoDTO,
+    public ResponseEntity<Long> criarMovimentacao(
+            @RequestBody MovimentacaoPontosDTO movimentacaoDTO,
             @AuthenticationPrincipal UserDetails userDetails) {
-        movimentacaoService.criarMovimentacao(movimentacaoDTO, userDetails.getUsername());
-        return ResponseEntity.ok("Operação realizada");
+        Long idGerado = movimentacaoService.criarMovimentacao(movimentacaoDTO, userDetails.getUsername());
+        return ResponseEntity.ok(idGerado);
     }
 
     @PutMapping("/{id}")
