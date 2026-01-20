@@ -1,5 +1,7 @@
 package br.edu.ifs.academico.controller;
 
+import br.edu.ifs.academico.DTO.usuario.request.UsuarioRequestDTO;
+import br.edu.ifs.academico.DTO.usuario.response.UsuarioResponseDTO;
 import br.edu.ifs.academico.service.UsuarioService;
 import jakarta.validation.Valid;
 import org.springframework.http.MediaType;
@@ -22,18 +24,15 @@ public class UsuarioController {
     }
 
     @GetMapping("/me")
-    public ResponseEntity<UsuarioDTO> pegarUsuarioAtual(Authentication authentication) {
-        String email = authentication.getName();
-        return ResponseEntity.ok(usuarioService.buscarUsuario(email));
+    public ResponseEntity<UsuarioResponseDTO> pegarUsuarioAtual(Authentication authentication) {
+        return ResponseEntity.ok(usuarioService.buscarUsuario(authentication.getName()));
     }
 
     @PutMapping("/me")
-    public ResponseEntity<UsuarioDTO> atualizarMeuPerfil(
+    public ResponseEntity<UsuarioResponseDTO> atualizarMeuPerfil(
             @AuthenticationPrincipal UserDetails userDetails,
-            @Valid @RequestBody UsuarioDTO usuarioDTO) {
-
-        usuarioService.atualizarUsuario(usuarioDTO, userDetails.getUsername());
-        return ResponseEntity.ok().build();
+            @Valid @RequestBody UsuarioRequestDTO usuarioRequestDTO) {
+        return ResponseEntity.ok(usuarioService.atualizarUsuario(usuarioRequestDTO, userDetails.getUsername()));
     }
 
     @DeleteMapping("/me")
