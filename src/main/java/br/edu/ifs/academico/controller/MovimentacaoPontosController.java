@@ -1,8 +1,10 @@
 package br.edu.ifs.academico.controller;
 
-import br.edu.ifs.academico.DTO.MovimentacaoPontosDTO;
-import br.edu.ifs.academico.DTO.MovimentacaoResponseDTO;
+import br.edu.ifs.academico.DTO.movimentacao.request.MovimentacaoRequestDTO;
+import br.edu.ifs.academico.DTO.movimentacao.response.MovimentacaoResponseDTO;
 import br.edu.ifs.academico.service.MovimentacaoPontosService;
+import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -27,18 +29,16 @@ public class MovimentacaoPontosController {
     }
 
     @PostMapping("/criar")
-    public ResponseEntity<Long> criarMovimentacao(
-            @RequestBody MovimentacaoPontosDTO movimentacaoDTO,
+    public ResponseEntity<MovimentacaoResponseDTO> criarMovimentacao(
+            @Valid @RequestBody MovimentacaoRequestDTO movimentacaoRequestDTO,
             @AuthenticationPrincipal UserDetails userDetails) {
-        Long idGerado = movimentacaoService.criarMovimentacao(movimentacaoDTO, userDetails.getUsername());
-        return ResponseEntity.ok(idGerado);
+        return ResponseEntity.status(HttpStatus.CREATED).body(movimentacaoService.criarMovimentacao(movimentacaoRequestDTO, userDetails.getUsername()));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Void> atualizarMovimentacao(@RequestBody MovimentacaoPontosDTO movimentacaoDTO,
+    public ResponseEntity<MovimentacaoResponseDTO> atualizarMovimentacao(@Valid @RequestBody MovimentacaoRequestDTO movimentacaoRequestDTO,
             @PathVariable Long id, @AuthenticationPrincipal UserDetails userDetails) {
-        movimentacaoService.atualizarMovimentacao(movimentacaoDTO, id, userDetails.getUsername());
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok(movimentacaoService.atualizarMovimentacao(movimentacaoRequestDTO, id, userDetails.getUsername()));
     }
 
     @DeleteMapping("/{id}")

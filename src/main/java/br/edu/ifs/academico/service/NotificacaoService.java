@@ -1,10 +1,11 @@
 package br.edu.ifs.academico.service;
 
-import br.edu.ifs.academico.DTO.NotificacaoDTO;
-import br.edu.ifs.academico.DTO.NotificacaoResponseDTO;
+import br.edu.ifs.academico.DTO.notificacao.request.NotificacaoRequestDTO;
+import br.edu.ifs.academico.DTO.notificacao.response.NotificacaoResponseDTO;
 import br.edu.ifs.academico.entity.Notificacao;
 import br.edu.ifs.academico.entity.NotificacaoUsuario;
 import br.edu.ifs.academico.entity.Usuario;
+import br.edu.ifs.academico.mapper.NotificacaoMapper;
 import br.edu.ifs.academico.repository.NotificacaoRepository;
 import br.edu.ifs.academico.repository.NotificacaoUsuarioRepository;
 import br.edu.ifs.academico.repository.UsuarioRepository;
@@ -30,13 +31,15 @@ public class NotificacaoService {
     private final NotificacaoRepository notificacaoRepository;
     private final NotificacaoUsuarioRepository notificacaoUsuarioRepository;
     private final UsuarioRepository usuarioRepository;
+    private final NotificacaoMapper notificacaoMapper;
 
     public NotificacaoService(NotificacaoRepository notificacaoRepository,
-            NotificacaoUsuarioRepository notificacaoUsuarioRepository,
-            UsuarioRepository usuarioRepository) {
+                              NotificacaoUsuarioRepository notificacaoUsuarioRepository,
+                              UsuarioRepository usuarioRepository, NotificacaoMapper notificacaoMapper) {
         this.notificacaoRepository = notificacaoRepository;
         this.notificacaoUsuarioRepository = notificacaoUsuarioRepository;
         this.usuarioRepository = usuarioRepository;
+        this.notificacaoMapper = notificacaoMapper;
     }
 
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
@@ -62,48 +65,46 @@ public class NotificacaoService {
 
         return notificacoes.stream()
                 .filter(notificacao -> !ocultas.contains(notificacao.getId()))
-                .map(notificacao -> new NotificacaoResponseDTO(
-                        notificacao.getId(),
-                        notificacao.getTitulo(),
-                        notificacao.getMensagem(),
-                        notificacao.getTipo(),
-                        notificacao.getDataCriacao(),
-                        lidas.getOrDefault(notificacao.getId(), false)))
+                .map(notificacaoMapper::toResponseDTO)
                 .toList();
     }
 
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
-    public List<Notificacao> buscarNotificacoesPublicas() {
-        return notificacaoRepository.findByUsuarioIsNull();
+    public List<NotificacaoResponseDTO> buscarNotificacoesPublicas() {
+
+        return notificacaoRepository.findByUsuarioIsNull()
+                .stream()
+                .map(notificacaoMapper::toResponseDTO)
+                .toList();
     }
 
     @PreAuthorize("hasAnyRole('ADMIN')")
-    public Long criarNotificacao(NotificacaoDTO notificacaoDTO) {
+    public NotificacaoResponseDTO criarNotificacao(NotificacaoRequestDTO notificacaoRequestDTO) {
         Notificacao entity = Notificacao.builder()
-                .titulo(notificacaoDTO.titulo())
-                .mensagem(notificacaoDTO.mensagem())
-                .tipo(notificacaoDTO.tipo())
+                .titulo(notificacaoRequestDTO.titulo())
+                .mensagem(notificacaoRequestDTO.mensagem())
+                .tipo(notificacaoRequestDTO.tipo())
                 .build();
 
-        return notificacaoRepository.save(entity).getId();
+        return notificacaoMapper.toResponseDTO(notificacaoRepository.save(entity));
     }
 
     @PreAuthorize("hasAnyRole('ADMIN')")
-    public void atualizarNotificacao(NotificacaoDTO notificacaoDTO, Long id) {
+    public NotificacaoResponseDTO atualizarNotificacao(NotificacaoRequestDTO notificacaoRequestDTO, Long id) {
         var notificacao = notificacaoRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("notificação não encontrado"));
 
-        if (notificacaoDTO.titulo() != null) {
-            notificacao.setTitulo(notificacaoDTO.titulo());
+        if (notificacaoRequestDTO.titulo() != null) {
+            notificacao.setTitulo(notificacaoRequestDTO.titulo());
         }
-        if (notificacaoDTO.mensagem() != null) {
-            notificacao.setMensagem(notificacaoDTO.mensagem());
+        if (notificacaoRequestDTO.mensagem() != null) {
+            notificacao.setMensagem(notificacaoRequestDTO.mensagem());
         }
-        if (notificacaoDTO.tipo() != null) {
-            notificacao.setTipo(notificacaoDTO.tipo());
+        if (notificacaoRequestDTO.tipo() != null) {
+            notificacao.setTipo(notificacaoRequestDTO.tipo());
         }
 
-        notificacaoRepository.save(notificacao);
+        return notificacaoMapper.toResponseDTO(notificacaoRepository.save(notificacao));
     }
 
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")

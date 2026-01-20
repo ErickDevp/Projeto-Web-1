@@ -1,7 +1,9 @@
 package br.edu.ifs.academico.service;
 
-import br.edu.ifs.academico.DTO.ProgramaFidelidadeDTO;
+import br.edu.ifs.academico.DTO.programa.request.ProgramaRequestDTO;
+import br.edu.ifs.academico.DTO.programa.response.ProgramaResponseDTO;
 import br.edu.ifs.academico.entity.ProgramaFidelidade;
+import br.edu.ifs.academico.mapper.ProgramaMapper;
 import br.edu.ifs.academico.repository.CartaoUsuarioRepository;
 import br.edu.ifs.academico.repository.ProgramaFidelidadeRepository;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -14,41 +16,47 @@ public class ProgramaFidelidadeService {
 
     private final ProgramaFidelidadeRepository programaRepository;
     private final CartaoUsuarioRepository cartaoRepository;
+    private final ProgramaMapper programaMapper;
 
     public ProgramaFidelidadeService(ProgramaFidelidadeRepository programaRepository,
-            CartaoUsuarioRepository cartaoRepository) {
+                                     CartaoUsuarioRepository cartaoRepository, ProgramaMapper programaMapper) {
         this.programaRepository = programaRepository;
         this.cartaoRepository = cartaoRepository;
+        this.programaMapper = programaMapper;
     }
 
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
-    public List<ProgramaFidelidade> buscarProgramas() {
-        return programaRepository.findAll();
+    public List<ProgramaResponseDTO> buscarProgramas() {
+
+        return programaRepository.findAll()
+                .stream()
+                .map(programaMapper::toResponseDTO)
+                .toList();
     }
 
     @PreAuthorize("hasAnyRole('ADMIN')")
-    public Long criarPrograma(ProgramaFidelidadeDTO programaDTO) {
+    public ProgramaResponseDTO criarPrograma(ProgramaRequestDTO programaRequestDTO) {
         ProgramaFidelidade entity = ProgramaFidelidade.builder()
-                .nome(programaDTO.nome())
-                .descricao(programaDTO.descricao())
+                .nome(programaRequestDTO.nome())
+                .descricao(programaRequestDTO.descricao())
                 .build();
 
-        return programaRepository.save(entity).getId();
+        return programaMapper.toResponseDTO(programaRepository.save(entity));
     }
 
     @PreAuthorize("hasAnyRole('ADMIN')")
-    public void atualizarPrograma(ProgramaFidelidadeDTO programaDTO, Long id) {
+    public ProgramaResponseDTO atualizarPrograma(ProgramaRequestDTO programaRequestDTO, Long id) {
         var programa = programaRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Programa não encontrado"));
 
-        if (programaDTO.nome() != null) {
-            programa.setNome(programaDTO.nome());
+        if (programaRequestDTO.nome() != null) {
+            programa.setNome(programaRequestDTO.nome());
         }
-        if (programaDTO.descricao() != null) {
-            programa.setDescricao(programaDTO.descricao());
+        if (programaRequestDTO.descricao() != null) {
+            programa.setDescricao(programaRequestDTO.descricao());
         }
 
-        programaRepository.save(programa);
+        return programaMapper.toResponseDTO(programaRepository.save(programa));
     }
 
     @PreAuthorize("hasAnyRole('ADMIN')")

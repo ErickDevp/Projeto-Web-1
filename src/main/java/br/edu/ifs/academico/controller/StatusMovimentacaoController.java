@@ -1,8 +1,7 @@
 package br.edu.ifs.academico.controller;
 
-import br.edu.ifs.academico.DTO.StatusMovimentacaoDTO;
 import br.edu.ifs.academico.entity.StatusMovimentacao;
-import br.edu.ifs.academico.service.StatusMovimentacaoService;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -27,14 +26,14 @@ public class StatusMovimentacaoController {
     }
 
     @PostMapping("/criar")
-    public ResponseEntity<String> criarStatus(@RequestBody StatusMovimentacaoDTO statusDTO,
+    public ResponseEntity<String> criarStatus(@Valid @RequestBody StatusMovimentacaoDTO statusDTO,
             @AuthenticationPrincipal UserDetails userDetails) {
         statusService.criarStatus(statusDTO, userDetails.getUsername());
         return ResponseEntity.ok("Operação realizada");
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Void> atualizarStatus(@PathVariable Long id, @RequestBody StatusMovimentacaoDTO statusDTO,
+    public ResponseEntity<Void> atualizarStatus(@PathVariable Long id, @Valid @RequestBody StatusMovimentacaoDTO statusDTO,
             @AuthenticationPrincipal UserDetails userDetails) {
         statusService.atualizarStatus(statusDTO, id, userDetails.getUsername());
         return ResponseEntity.noContent().build();

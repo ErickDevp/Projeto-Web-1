@@ -1,8 +1,8 @@
 package br.edu.ifs.academico.controller;
 
-import br.edu.ifs.academico.DTO.ProgramaFidelidadeDTO;
 import br.edu.ifs.academico.entity.ProgramaFidelidade;
 import br.edu.ifs.academico.service.ProgramaFidelidadeService;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -24,14 +24,14 @@ public class ProgramaFidelidadeController {
     }
 
     @PostMapping("/criar")
-    public ResponseEntity<String> criarPrograma(@RequestBody ProgramaFidelidadeDTO programaDTO) {
+    public ResponseEntity<String> criarPrograma(@Valid @RequestBody ProgramaFidelidadeDTO programaDTO) {
         programaService.criarPrograma(programaDTO);
         return ResponseEntity.ok("Operação realizada");
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<Void> atualizarPrograma(@PathVariable Long id,
-            @RequestBody ProgramaFidelidadeDTO programaDTO) {
+                                                  @Valid @RequestBody ProgramaFidelidadeDTO programaDTO) {
         programaService.atualizarPrograma(programaDTO, id);
         return ResponseEntity.noContent().build();
     }

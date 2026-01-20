@@ -1,5 +1,6 @@
 package br.edu.ifs.academico.entity;
 
+import br.edu.ifs.academico.entity.enums.Valido;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -23,12 +24,18 @@ public class Promocao {
 
     private String titulo;
     private String descricao;
-    private LocalDate data_inicio;
-    private LocalDate data_fim;
-    private Boolean ativo;
+    private LocalDate dataInicio;
+    private LocalDate dataFim;
+    private Double pontosPorReal;
+
+    @Transient
+    public Valido getValido() {
+        return dataFim.isBefore(LocalDate.now())
+                ? Valido.VENCIDO
+                : Valido.ATIVO;
+    }
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_programa")
-    @JsonIgnore
     private ProgramaFidelidade programa;
 }

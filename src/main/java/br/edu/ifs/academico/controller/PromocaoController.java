@@ -1,8 +1,8 @@
 package br.edu.ifs.academico.controller;
 
-import br.edu.ifs.academico.DTO.PromocaoDTO;
 import br.edu.ifs.academico.entity.Promocao;
 import br.edu.ifs.academico.service.PromocaoService;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -24,14 +24,14 @@ public class PromocaoController {
     }
 
     @PostMapping("/criar")
-    public ResponseEntity<String> criarPromocao(@RequestBody PromocaoDTO promocaoDTO) {
+    public ResponseEntity<String> criarPromocao(@Valid @RequestBody PromocaoDTO promocaoDTO) {
         promocaoService.criarPromocao(promocaoDTO);
         return ResponseEntity.ok("Operação realizada");
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<Void> atualizarPromocao(@PathVariable Long id,
-            @RequestBody PromocaoDTO promocaoDTO) {
+                                                  @Valid @RequestBody PromocaoDTO promocaoDTO) {
         promocaoService.atualizarPromocao(promocaoDTO, id);
         return ResponseEntity.noContent().build();
     }

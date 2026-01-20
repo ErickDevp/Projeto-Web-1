@@ -1,7 +1,7 @@
 package br.edu.ifs.academico.controller;
 
-import br.edu.ifs.academico.DTO.UsuarioDTO;
 import br.edu.ifs.academico.service.UsuarioService;
+import jakarta.validation.Valid;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -30,7 +30,7 @@ public class UsuarioController {
     @PutMapping("/me")
     public ResponseEntity<UsuarioDTO> atualizarMeuPerfil(
             @AuthenticationPrincipal UserDetails userDetails,
-            @RequestBody UsuarioDTO usuarioDTO) {
+            @Valid @RequestBody UsuarioDTO usuarioDTO) {
 
         usuarioService.atualizarUsuario(usuarioDTO, userDetails.getUsername());
         return ResponseEntity.ok().build();

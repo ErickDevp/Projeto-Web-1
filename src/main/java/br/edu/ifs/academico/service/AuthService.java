@@ -1,6 +1,11 @@
 package br.edu.ifs.academico.service;
 
-import br.edu.ifs.academico.DTO.UsuarioDTO;
+import br.edu.ifs.academico.DTO.auth.request.LoginRequestDTO;
+import br.edu.ifs.academico.DTO.auth.request.PasswordChangeRequestDTO;
+import br.edu.ifs.academico.DTO.auth.request.PasswordResetRequestDTO;
+import br.edu.ifs.academico.DTO.auth.request.RegisterRequestDTO;
+import br.edu.ifs.academico.DTO.auth.response.AuthResponseDTO;
+import br.edu.ifs.academico.DTO.auth.response.PasswordResetResponseDTO;
 import br.edu.ifs.academico.entity.PasswordResetToken;
 import br.edu.ifs.academico.entity.Usuario;
 import br.edu.ifs.academico.entity.enums.Role;
@@ -46,15 +51,15 @@ public class AuthService {
     }
 
     // Salva usuário com senha criptografada
-    public String saveUsuario(UsuarioDTO usuarioDTO) {
-        if (existsByEmail(usuarioDTO.email())) {
+    public AuthResponseDTO saveUsuario(RegisterRequestDTO registerRequestDTO) {
+        if (existsByEmail(registerRequestDTO.email())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email já cadastrado");
         }
 
         Usuario entity = Usuario.builder()
-                .nome(usuarioDTO.nome())
-                .email(usuarioDTO.email())
-                .senha(passwordEncoder.encode(usuarioDTO.senha()))
+                .nome(registerRequestDTO.nome())
+                .email(registerRequestDTO.email())
+                .senha(passwordEncoder.encode(registerRequestDTO.senha()))
                 .role(Role.USER)
                 .build();
 
@@ -66,17 +71,21 @@ public class AuthService {
                 saved.getSenha(),
                 List.of(new SimpleGrantedAuthority("ROLE_" + saved.getRole().name())));
 
-        return jwtService.generateToken(userDetails);
+        String token = jwtService.generateToken(userDetails);
+
+        return new AuthResponseDTO(token);
     }
 
     // login usuario
-    public String login(String email, String senha) {
+    public AuthResponseDTO login(LoginRequestDTO loginRequestDTO) {
         try {
             Authentication authentication = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(email, senha));
+                    new UsernamePasswordAuthenticationToken(loginRequestDTO.email(), loginRequestDTO.senha()));
 
             UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-            return jwtService.generateToken(userDetails);
+            String token = jwtService.generateToken(userDetails);
+
+            return new AuthResponseDTO(token);
 
         } catch (BadCredentialsException e) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Credenciais inválidas");
@@ -84,8 +93,8 @@ public class AuthService {
     }
 
     // 1. Gera o token e o retorna (para ser exibido na API)
-    public String solicitarRedefinicaoSenha(String email) {
-        Usuario usuario = usuarioRepository.findByEmail(email)
+    public PasswordResetResponseDTO solicitarRedefinicaoSenha(PasswordResetRequestDTO passwordResetRequestDTO) {
+        Usuario usuario = usuarioRepository.findByEmail(passwordResetRequestDTO.email())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuário não encontrado"));
 
         // Se já existir um token antigo para esse usuário, apaga para gerar um novo
@@ -102,12 +111,12 @@ public class AuthService {
         tokenRepository.save(resetToken);
 
         // AQUI: Retornamos o token para o Controller devolver no JSON
-        return token;
+        return new PasswordResetResponseDTO(token);
     }
 
     // 2. Recebe o token e a nova senha para efetivar a troca
-    public void redefinirSenha(String token, String novaSenha) {
-        PasswordResetToken resetToken = tokenRepository.findByToken(token)
+    public void redefinirSenha(PasswordChangeRequestDTO passwordChangeRequestDTO) {
+        PasswordResetToken resetToken = tokenRepository.findByToken(passwordChangeRequestDTO.token())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Token inválido"));
 
         if (resetToken.isExpired()) {
@@ -115,7 +124,7 @@ public class AuthService {
         }
 
         Usuario usuario = resetToken.getUsuario();
-        usuario.setSenha(passwordEncoder.encode(novaSenha)); // Criptografa a nova senha
+        usuario.setSenha(passwordEncoder.encode(passwordChangeRequestDTO.novaSenha())); // Criptografa a nova senha
         usuarioRepository.save(usuario);
         tokenRepository.delete(resetToken);
     }

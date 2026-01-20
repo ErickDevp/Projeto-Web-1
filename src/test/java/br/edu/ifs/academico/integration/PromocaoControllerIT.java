@@ -30,17 +30,17 @@ class PromocaoControllerIT extends IntegrationTestSupport {
                 "Promo 1",
                 "Descricao",
                 LocalDate.now(),
-                LocalDate.now().plusDays(10),
-                true));
+                LocalDate.now().plusDays(10)
+        ));
 
         mockMvc.perform(post("/promocao/criar")
-                .with(bearerToken(adminToken))
-                .contentType("application/json")
-                .content(payload))
+                        .with(bearerToken(adminToken))
+                        .contentType("application/json")
+                        .content(payload))
                 .andExpect(status().isOk());
 
         mockMvc.perform(get("/promocao")
-                .with(bearerToken(adminToken)))
+                        .with(bearerToken(adminToken)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(1));
 
@@ -51,23 +51,23 @@ class PromocaoControllerIT extends IntegrationTestSupport {
                 "Promo 2",
                 "Descricao 2",
                 LocalDate.now(),
-                LocalDate.now().plusDays(5),
-                false));
+                LocalDate.now().plusDays(5)
+        ));
 
         mockMvc.perform(put("/promocao/{id}", promocao.getId())
-                .with(bearerToken(adminToken))
-                .contentType("application/json")
-                .content(updatePayload))
+                        .with(bearerToken(adminToken))
+                        .contentType("application/json")
+                        .content(updatePayload))
                 .andExpect(status().isNoContent());
 
         mockMvc.perform(delete("/promocao/{id}", promocao.getId())
-                .with(bearerToken(adminToken)))
+                        .with(bearerToken(adminToken)))
                 .andExpect(status().isNoContent());
 
         assertThat(promocaoRepository.findById(promocao.getId())).isEmpty();
     }
 
     private record PromocaoRequest(Long programaId, String titulo, String descricao,
-            LocalDate data_inicio, LocalDate data_fim, Boolean ativo) {
+                                   LocalDate dataInicio, LocalDate dataFim) {
     }
 }
