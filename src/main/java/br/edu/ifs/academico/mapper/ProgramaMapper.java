@@ -3,7 +3,6 @@ package br.edu.ifs.academico.mapper;
 import br.edu.ifs.academico.DTO.programa.response.ProgramaComPromocoesResponseDTO;
 import br.edu.ifs.academico.DTO.programa.response.ProgramaResponseDTO;
 import br.edu.ifs.academico.DTO.promocao.response.PromocaoProgramaResponseDTO;
-import br.edu.ifs.academico.DTO.promocao.response.PromocaoResponseDTO;
 import br.edu.ifs.academico.entity.ProgramaFidelidade;
 import org.springframework.stereotype.Component;
 
@@ -17,16 +16,14 @@ public class ProgramaMapper {
         return new ProgramaResponseDTO(
                 programa.getId(),
                 programa.getNome(),
-                programa.getDescricao()
-        );
+                programa.getDescricao());
     }
 
     public ProgramaComPromocoesResponseDTO toProgramaPromocaoResponseDTO(ProgramaFidelidade programa) {
 
-        List<PromocaoProgramaResponseDTO> promocoes =
-                programa.getPromocoes() == null
-                        ? List.of()
-                        : programa.getPromocoes().stream()
+        List<PromocaoProgramaResponseDTO> promocoes = programa.getPromocoes() == null
+                ? List.of()
+                : programa.getPromocoes().stream()
                         .map(pc -> new PromocaoProgramaResponseDTO(
                                 pc.getId(),
                                 pc.getTitulo(),
@@ -34,15 +31,13 @@ public class ProgramaMapper {
                                 pc.getPontosPorReal(),
                                 pc.getDataInicio(),
                                 pc.getDataFim(),
-                                pc.getValido()
-                        ))
+                                pc.getValido()))
                         .toList();
 
-        return new ProgramaComPromocoesResponseDTO (
-            programa.getId(),
-            programa.getNome(),
-            programa.getDescricao(),
-            promocoes
-        );
+        return new ProgramaComPromocoesResponseDTO(
+                programa.getId(),
+                programa.getNome(),
+                programa.getDescricao(),
+                promocoes);
     }
 }

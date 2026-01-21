@@ -15,8 +15,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.Map;
-
 @RestController
 @RequestMapping("/auth")
 public class AuthController {
@@ -38,8 +36,10 @@ public class AuthController {
     }
 
     @PostMapping("/forgot-password")
-    public ResponseEntity<PasswordResetResponseDTO> forgotPassword(@Valid @RequestBody PasswordResetRequestDTO passwordResetRequestDTO) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(authService.solicitarRedefinicaoSenha(passwordResetRequestDTO));
+    public ResponseEntity<PasswordResetResponseDTO> forgotPassword(
+            @Valid @RequestBody PasswordResetRequestDTO passwordResetRequestDTO) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(authService.solicitarRedefinicaoSenha(passwordResetRequestDTO));
     }
 
     @PostMapping("/reset-password")

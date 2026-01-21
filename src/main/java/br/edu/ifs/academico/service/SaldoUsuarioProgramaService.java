@@ -1,7 +1,6 @@
 package br.edu.ifs.academico.service;
 
 import br.edu.ifs.academico.DTO.saldo.response.SaldoResponseDTO;
-import br.edu.ifs.academico.entity.SaldoUsuarioPrograma;
 import br.edu.ifs.academico.mapper.SaldoMapper;
 import br.edu.ifs.academico.repository.SaldoUsuarioProgramaRepository;
 import br.edu.ifs.academico.repository.UsuarioRepository;
@@ -18,7 +17,7 @@ public class SaldoUsuarioProgramaService {
     private final SaldoMapper saldoMapper;
 
     public SaldoUsuarioProgramaService(SaldoUsuarioProgramaRepository saldoRepository,
-                                       UsuarioRepository usuarioRepository, SaldoMapper saldoMapper) {
+            UsuarioRepository usuarioRepository, SaldoMapper saldoMapper) {
         this.saldoRepository = saldoRepository;
         this.usuarioRepository = usuarioRepository;
         this.saldoMapper = saldoMapper;

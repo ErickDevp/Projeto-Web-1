@@ -1,7 +1,6 @@
 package br.edu.ifs.academico.service;
 
 import br.edu.ifs.academico.DTO.comprovante.response.ArquivoBytesResponseDTO;
-import br.edu.ifs.academico.DTO.comprovante.request.ComprovanteRequestDTO;
 import br.edu.ifs.academico.DTO.comprovante.response.ComprovanteResponseDTO;
 import br.edu.ifs.academico.entity.Comprovante;
 import br.edu.ifs.academico.mapper.ComprovanteMapper;
@@ -28,7 +27,7 @@ public class ComprovanteService {
     private final ComprovanteMapper comprovanteMapper;
 
     public ComprovanteService(ComprovanteRepository comprovanteRepository,
-                              MovimentacaoPontosRepository movimentacaoRepository, ComprovanteMapper comprovanteMapper) {
+            MovimentacaoPontosRepository movimentacaoRepository, ComprovanteMapper comprovanteMapper) {
         this.comprovanteRepository = comprovanteRepository;
         this.movimentacaoRepository = movimentacaoRepository;
         this.comprovanteMapper = comprovanteMapper;

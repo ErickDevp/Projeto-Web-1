@@ -1,7 +1,6 @@
 package br.edu.ifs.academico.entity;
 
 import br.edu.ifs.academico.entity.enums.Valido;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

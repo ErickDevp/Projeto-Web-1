@@ -1,7 +1,6 @@
 package br.edu.ifs.academico.controller;
 
 import br.edu.ifs.academico.DTO.saldo.response.SaldoResponseDTO;
-import br.edu.ifs.academico.entity.SaldoUsuarioPrograma;
 import br.edu.ifs.academico.service.SaldoUsuarioProgramaService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;

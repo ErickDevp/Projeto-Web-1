@@ -2,7 +2,6 @@ package br.edu.ifs.academico.controller;
 
 import br.edu.ifs.academico.DTO.notificacao.request.NotificacaoRequestDTO;
 import br.edu.ifs.academico.DTO.notificacao.response.NotificacaoResponseDTO;
-import br.edu.ifs.academico.entity.Notificacao;
 import br.edu.ifs.academico.service.NotificacaoService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -34,13 +33,15 @@ public class NotificacaoController {
     }
 
     @PostMapping("/criar")
-    public ResponseEntity<NotificacaoResponseDTO> criarNotificacao(@Valid @RequestBody NotificacaoRequestDTO notificacaoRequestDTO) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(notificacaoService.criarNotificacao(notificacaoRequestDTO));
+    public ResponseEntity<NotificacaoResponseDTO> criarNotificacao(
+            @Valid @RequestBody NotificacaoRequestDTO notificacaoRequestDTO) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(notificacaoService.criarNotificacao(notificacaoRequestDTO));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<NotificacaoResponseDTO> atualizarNotificacao(@PathVariable Long id,
-                                                     @Valid @RequestBody NotificacaoRequestDTO notificacaoRequestDTO) {
+            @Valid @RequestBody NotificacaoRequestDTO notificacaoRequestDTO) {
         return ResponseEntity.ok(notificacaoService.atualizarNotificacao(notificacaoRequestDTO, id));
     }
 
