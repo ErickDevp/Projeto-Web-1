@@ -60,6 +60,8 @@ public class CartaoUsuarioService {
                 .programas(programas)
                 .nome(cartaoRequestDTO.nome())
                 .bandeira(cartaoRequestDTO.bandeira())
+                .numero(cartaoRequestDTO.numero())
+                .dataValidade(cartaoRequestDTO.dataValidade())
                 .tipo(cartaoRequestDTO.tipo())
                 .build();
 

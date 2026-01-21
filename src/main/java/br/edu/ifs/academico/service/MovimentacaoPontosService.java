@@ -193,7 +193,7 @@ public class MovimentacaoPontosService {
         }
 
         try {
-            int tempo = 10000 + new Random().nextInt(36000);
+            int tempo = 3000 + new Random().nextInt(13000);
             Thread.sleep(tempo);
 
             Status resultado = decidirStatusFinal();

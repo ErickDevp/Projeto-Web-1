@@ -1,6 +1,7 @@
 package br.edu.ifs.academico.controller;
 
 import br.edu.ifs.academico.DTO.programa.request.ProgramaRequestDTO;
+import br.edu.ifs.academico.DTO.programa.response.ProgramaComPromocoesResponseDTO;
 import br.edu.ifs.academico.DTO.programa.response.ProgramaResponseDTO;
 import br.edu.ifs.academico.entity.ProgramaFidelidade;
 import br.edu.ifs.academico.service.ProgramaFidelidadeService;
@@ -22,7 +23,7 @@ public class ProgramaFidelidadeController {
     }
 
     @GetMapping
-    public ResponseEntity<List<ProgramaResponseDTO>> buscarProgramasFidelidade() {
+    public ResponseEntity<List<ProgramaComPromocoesResponseDTO>> buscarProgramasFidelidade() {
         return ResponseEntity.ok(programaService.buscarProgramas());
     }
 

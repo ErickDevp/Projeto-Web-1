@@ -1,6 +1,7 @@
 package br.edu.ifs.academico.service;
 
 import br.edu.ifs.academico.DTO.programa.request.ProgramaRequestDTO;
+import br.edu.ifs.academico.DTO.programa.response.ProgramaComPromocoesResponseDTO;
 import br.edu.ifs.academico.DTO.programa.response.ProgramaResponseDTO;
 import br.edu.ifs.academico.entity.ProgramaFidelidade;
 import br.edu.ifs.academico.mapper.ProgramaMapper;
@@ -26,11 +27,11 @@ public class ProgramaFidelidadeService {
     }
 
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
-    public List<ProgramaResponseDTO> buscarProgramas() {
+    public List<ProgramaComPromocoesResponseDTO> buscarProgramas() {
 
         return programaRepository.findAll()
                 .stream()
-                .map(programaMapper::toResponseDTO)
+                .map(programaMapper::toProgramaPromocaoResponseDTO)
                 .toList();
     }
 
