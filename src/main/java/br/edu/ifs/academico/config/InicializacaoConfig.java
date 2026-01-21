@@ -359,7 +359,7 @@ public class InicializacaoConfig {
                         return;
                 }
 
-                // Cria a movimentação
+                // Cria a movimentação (usando o saldo passado apenas como referência de ID)
                 MovimentacaoPontos movimentacao = MovimentacaoPontos.builder()
                                 .valor(valor)
                                 .pontos_calculados(pontosCalculados)
@@ -379,20 +379,30 @@ public class InicializacaoConfig {
                 // Relacionamento bidirecional
                 movimentacao.setStatus(status);
 
-                // Salva apenas a raiz (com cascade)
+                // Salva a movimentação
                 movimentacaoRepository.save(movimentacao);
 
                 // Atualiza saldo apenas se CREDITADO
                 if (statusEnum == Status.CREDITADO) {
-                        saldo.setPontos(saldo.getPontos() + pontosCalculados);
-                        saldoRepository.save(saldo);
+                        // CORREÇÃO: Busca o saldo atualizado do banco para garantir que a entidade está
+                        // gerenciada (Managed)
+                        // Isso evita erros de concorrência ou atualização de objeto desconectado
+                        // (Detached)
+                        var saldoAtualizado = saldoRepository.findById(saldo.getId())
+                                        .orElseThrow(() -> new RuntimeException(
+                                                        "Saldo não encontrado para atualização"));
+
+                        saldoAtualizado.setPontos(saldoAtualizado.getPontos() + pontosCalculados);
+                        saldoRepository.save(saldoAtualizado);
+
                         log.info("  ✓ R$ {} → {} pontos ({}x = {}) | Status: CREDITADO | Saldo total: {}",
                                         valor, pontosCalculados, promocao.getPontosPorReal(),
-                                        promocao.getTitulo(), saldo.getPontos());
+                                        promocao.getTitulo(), saldoAtualizado.getPontos());
                 } else {
                         log.info("  ✓ R$ {} → {} pontos ({}x = {}) | Status: {}",
                                         valor, pontosCalculados, promocao.getPontosPorReal(),
                                         promocao.getTitulo(), statusEnum);
                 }
         }
+
 }
