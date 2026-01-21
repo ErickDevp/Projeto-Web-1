@@ -1,8 +1,10 @@
 package br.edu.ifs.academico.service;
 
-import br.edu.ifs.academico.DTO.ArquivoBytesDTO;
-import br.edu.ifs.academico.DTO.UsuarioDTO;
+import br.edu.ifs.academico.DTO.comprovante.response.ArquivoBytesResponseDTO;
+import br.edu.ifs.academico.DTO.usuario.request.UsuarioRequestDTO;
+import br.edu.ifs.academico.DTO.usuario.response.UsuarioResponseDTO;
 import br.edu.ifs.academico.entity.Usuario;
+import br.edu.ifs.academico.mapper.UsuarioMapper;
 import br.edu.ifs.academico.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -22,38 +24,36 @@ import java.util.UUID;
 public class UsuarioService {
 
     private final UsuarioRepository usuarioRepository;
+    private final UsuarioMapper usuarioMapper;
 
-    public UsuarioService(UsuarioRepository usuarioRepository) {
+
+    public UsuarioService(UsuarioRepository usuarioRepository, UsuarioMapper usuarioMapper) {
         this.usuarioRepository = usuarioRepository;
+        this.usuarioMapper = usuarioMapper;
     }
 
     @Value("${usuario.foto.storage.path:uploads/usuarios}")
     private String storagePath;
 
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
-    public UsuarioDTO buscarUsuario(String email) {
+    public UsuarioResponseDTO buscarUsuario(String email) {
         Usuario usuario = usuarioRepository.findByEmail(email)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuário não encontrado"));
 
-        return new UsuarioDTO(
-                usuario.getId(),
-                usuario.getNome(),
-                usuario.getEmail(),
-                usuario.getRole(),
-                null);
+        return usuarioMapper.toResponseDTO(usuario);
     }
 
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
-    public void atualizarUsuario(UsuarioDTO usuarioDTO, String emailLogado) {
+    public UsuarioResponseDTO atualizarUsuario(UsuarioRequestDTO usuarioRequestDTO, String emailLogado) {
         var usuario = usuarioRepository.findByEmail(emailLogado)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuário não encontrado"));
 
-        if (usuarioDTO.nome() != null)
-            usuario.setNome(usuarioDTO.nome());
-        if (usuarioDTO.email() != null)
-            usuario.setEmail(usuarioDTO.email());
+        if (usuarioRequestDTO.nome() != null)
+            usuario.setNome(usuarioRequestDTO.nome());
+        if (usuarioRequestDTO.email() != null)
+            usuario.setEmail(usuarioRequestDTO.email());
 
-        usuarioRepository.save(usuario);
+        return usuarioMapper.toResponseDTO(usuarioRepository.save(usuario));
     }
 
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
@@ -106,7 +106,7 @@ public class UsuarioService {
     }
 
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
-    public ArquivoBytesDTO lerFotoPerfil(String emailLogado) {
+    public ArquivoBytesResponseDTO lerFotoPerfil(String emailLogado) {
         var usuario = usuarioRepository.findByEmail(emailLogado)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuário não encontrado"));
 
@@ -121,7 +121,7 @@ public class UsuarioService {
             if (contentType == null) {
                 contentType = "application/octet-stream";
             }
-            return new ArquivoBytesDTO(bytes, contentType);
+            return new ArquivoBytesResponseDTO(bytes, contentType);
         } catch (IOException e) {
             throw new RuntimeException("Erro ao ler arquivo: " + e.getMessage(), e);
         }

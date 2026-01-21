@@ -1,5 +1,6 @@
 package br.edu.ifs.academico.entity;
 
+import br.edu.ifs.academico.entity.enums.Status;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -21,11 +22,10 @@ public class StatusMovimentacao {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status_movimentacao")
-    private br.edu.ifs.academico.entity.enums.StatusMovimentacao status;
+    private Status status;
     private String motivo;
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_movimentacao")
-    @JsonIgnore
     private MovimentacaoPontos movimentacao;
 }

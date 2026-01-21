@@ -1,10 +1,14 @@
 package br.edu.ifs.academico.controller;
 
-import br.edu.ifs.academico.DTO.EsqueciSenhaDTO;
-import br.edu.ifs.academico.DTO.RedefinirSenhaDTO;
-import br.edu.ifs.academico.DTO.UsuarioDTO;
-import br.edu.ifs.academico.DTO.UsuarioLoginDTO;
+import br.edu.ifs.academico.DTO.auth.request.LoginRequestDTO;
+import br.edu.ifs.academico.DTO.auth.request.PasswordChangeRequestDTO;
+import br.edu.ifs.academico.DTO.auth.request.PasswordResetRequestDTO;
+import br.edu.ifs.academico.DTO.auth.request.RegisterRequestDTO;
+import br.edu.ifs.academico.DTO.auth.response.AuthResponseDTO;
+import br.edu.ifs.academico.DTO.auth.response.PasswordResetResponseDTO;
 import br.edu.ifs.academico.service.AuthService;
+import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -24,31 +28,23 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody UsuarioLoginDTO usuario) {
-        String token = authService.login(usuario.email(), usuario.senha());
-        return ResponseEntity.ok(Map.of("token", token));
+    public ResponseEntity<AuthResponseDTO> login(@Valid @RequestBody LoginRequestDTO loginRequestDTO) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(authService.login(loginRequestDTO));
     }
 
     @PostMapping("/register")
-    public ResponseEntity<?> register(@RequestBody UsuarioDTO usuario) {
-        String token = authService.saveUsuario(usuario);
-        return ResponseEntity.ok(Map.of("token", token));
+    public ResponseEntity<AuthResponseDTO> register(@Valid @RequestBody RegisterRequestDTO registerRequestDTO) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(authService.saveUsuario(registerRequestDTO));
     }
 
     @PostMapping("/forgot-password")
-    public ResponseEntity<Map<String, String>> forgotPassword(@RequestBody EsqueciSenhaDTO dto) {
-        // Pega o token gerado pelo serviço
-        String tokenGerado = authService.solicitarRedefinicaoSenha(dto.email());
-
-        // Retorna no JSON: { "reset_token": "abc-123-..." }
-        return ResponseEntity.ok(Map.of(
-                "message", "Solicitação recebida. Use o token abaixo para resetar a senha.",
-                "reset_token", tokenGerado));
+    public ResponseEntity<PasswordResetResponseDTO> forgotPassword(@Valid @RequestBody PasswordResetRequestDTO passwordResetRequestDTO) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(authService.solicitarRedefinicaoSenha(passwordResetRequestDTO));
     }
 
     @PostMapping("/reset-password")
-    public ResponseEntity<String> resetPassword(@RequestBody RedefinirSenhaDTO dto) {
-        authService.redefinirSenha(dto.token(), dto.novaSenha());
+    public ResponseEntity<String> resetPassword(@Valid @RequestBody PasswordChangeRequestDTO passwordChangeRequestDTO) {
+        authService.redefinirSenha(passwordChangeRequestDTO);
         return ResponseEntity.ok("Senha alterada com sucesso. Agora você pode fazer login.");
     }
 }

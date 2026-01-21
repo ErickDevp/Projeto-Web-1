@@ -1,8 +1,10 @@
 package br.edu.ifs.academico.service;
 
-import br.edu.ifs.academico.DTO.CartaoUsuarioDTO;
+import br.edu.ifs.academico.DTO.cartao.request.CartaoRequestDTO;
+import br.edu.ifs.academico.DTO.cartao.response.CartaoResponseDTO;
 import br.edu.ifs.academico.entity.CartaoUsuario;
 import br.edu.ifs.academico.entity.ProgramaFidelidade;
+import br.edu.ifs.academico.mapper.CartaoMapper;
 import br.edu.ifs.academico.repository.CartaoUsuarioRepository;
 import br.edu.ifs.academico.repository.ProgramaFidelidadeRepository;
 import br.edu.ifs.academico.repository.UsuarioRepository;
@@ -22,54 +24,52 @@ public class CartaoUsuarioService {
     private final CartaoUsuarioRepository cartaoRepository;
     private final UsuarioRepository usuarioRepository;
     private final ProgramaFidelidadeRepository programaRepository;
+    private final CartaoMapper cartaoMapper;
 
     public CartaoUsuarioService(CartaoUsuarioRepository cartaoRepository, UsuarioRepository usuarioRepository,
-            ProgramaFidelidadeRepository programaRepository) {
+                                ProgramaFidelidadeRepository programaRepository, CartaoMapper cartaoMapper) {
         this.cartaoRepository = cartaoRepository;
         this.usuarioRepository = usuarioRepository;
         this.programaRepository = programaRepository;
-    }
-
-    // Buscar todos os cartoes de determinado usuario
-    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
-    public List<CartaoUsuario> buscarTodosCartoes(String emailLogado) {
-        var usuario = usuarioRepository.findByEmail(emailLogado)
-                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
-
-        return cartaoRepository.findByUsuarioId(usuario.getId());
+        this.cartaoMapper = cartaoMapper;
     }
 
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
-    public Long criarCartao(CartaoUsuarioDTO cartaoDTO, String emailLogado) {
+    public List<CartaoResponseDTO> buscarTodosCartoes(String emailLogado) {
         var usuario = usuarioRepository.findByEmail(emailLogado)
                 .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
 
-        // Buscar todos os programas pelo IDs recebidos no DTO
-        Set<ProgramaFidelidade> programas = cartaoDTO.programaIds().stream()
+        return cartaoRepository.findByUsuarioId(usuario.getId())
+                .stream()
+                .map(cartaoMapper::toResponseDTO)
+                .toList();
+    }
+
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
+    public CartaoResponseDTO criarCartao(CartaoRequestDTO cartaoRequestDTO, String emailLogado) {
+        var usuario = usuarioRepository.findByEmail(emailLogado)
+                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+
+        Set<ProgramaFidelidade> programas = cartaoRequestDTO.programaIds().stream()
                 .map(id -> programaRepository.findById(id)
                         .orElseThrow(() -> new RuntimeException("Programa Fidelidade não encontrado: " + id)))
                 .collect(Collectors.toSet());
 
-        // valida multiplicadorPontos
-        if (cartaoDTO.multiplicadorPontos() == null || cartaoDTO.multiplicadorPontos() <= 0
-                || cartaoDTO.multiplicadorPontos() > 10) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "multiplicadorPontos deve ser > 0 e <= 10");
-        }
-
         var entity = CartaoUsuario.builder()
                 .usuario(usuario)
                 .programas(programas)
-                .nome(cartaoDTO.nome())
-                .bandeira(cartaoDTO.bandeira())
-                .tipo(cartaoDTO.tipo())
-                .multiplicadorPontos(cartaoDTO.multiplicadorPontos())
+                .nome(cartaoRequestDTO.nome())
+                .bandeira(cartaoRequestDTO.bandeira())
+                .numero(cartaoRequestDTO.numero())
+                .dataValidade(cartaoRequestDTO.dataValidade())
+                .tipo(cartaoRequestDTO.tipo())
                 .build();
 
-        return cartaoRepository.save(entity).getId();
+        return cartaoMapper.toResponseDTO(cartaoRepository.save(entity));
     }
 
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
-    public void atualizarCartao(CartaoUsuarioDTO cartaoDTO, Long id, String username) {
+    public CartaoResponseDTO atualizarCartao(CartaoRequestDTO cartaoRequestDTO, Long id, String username) {
         var cartao = cartaoRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Cartão não encontrado"));
 
@@ -77,20 +77,13 @@ public class CartaoUsuarioService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Não autorizado");
         }
 
-        if (cartaoDTO.nome() != null)
-            cartao.setNome(cartaoDTO.nome());
-        if (cartaoDTO.bandeira() != null)
-            cartao.setBandeira(cartaoDTO.bandeira());
-        if (cartaoDTO.tipo() != null)
-            cartao.setTipo(cartaoDTO.tipo());
-        if (cartaoDTO.multiplicadorPontos() != null) {
-            if (cartaoDTO.multiplicadorPontos() <= 0 || cartaoDTO.multiplicadorPontos() > 10) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "multiplicadorPontos deve ser > 0 e <= 10");
-            }
-            cartao.setMultiplicadorPontos(cartaoDTO.multiplicadorPontos());
-        }
-        if (cartaoDTO.programaIds() != null) {
-            Set<ProgramaFidelidade> programas = cartaoDTO.programaIds().stream()
+        if (cartaoRequestDTO.nome() != null) cartao.setNome(cartaoRequestDTO.nome());
+        if (cartaoRequestDTO.bandeira() != null) cartao.setBandeira(cartaoRequestDTO.bandeira());
+        if (cartaoRequestDTO.tipo() != null) cartao.setTipo(cartaoRequestDTO.tipo());
+        if (cartaoRequestDTO.numero() != null) cartao.setNumero(cartaoRequestDTO.numero());
+        if (cartaoRequestDTO.dataValidade() != null) cartao.setDataValidade(cartaoRequestDTO.dataValidade());
+        if (cartaoRequestDTO.programaIds() != null) {
+            Set<ProgramaFidelidade> programas = cartaoRequestDTO.programaIds().stream()
                     .map(idPrograma -> programaRepository.findById(idPrograma)
                             .orElseThrow(
                                     () -> new RuntimeException("Programa Fidelidade não encontrado: " + idPrograma)))
@@ -99,7 +92,7 @@ public class CartaoUsuarioService {
             cartao.setProgramas(programas);
         }
 
-        cartaoRepository.save(cartao);
+        return cartaoMapper.toResponseDTO(cartaoRepository.save(cartao));
     }
 
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")

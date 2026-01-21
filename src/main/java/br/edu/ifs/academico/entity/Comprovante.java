@@ -25,6 +25,5 @@ public class Comprovante {
 
     @ManyToOne(fetch = FetchType.LAZY) // Indica um relacionamento muitos para um (muitos pedidos para um cliente)
     @JoinColumn(name = "id_movimentacao") // Especifica o nome da coluna da chave estrangeira no banco de dados
-    @JsonIgnore
     private MovimentacaoPontos movimentacao; // Objeto que representa a entidade relacionada
 }

@@ -7,7 +7,7 @@ import br.edu.ifs.academico.entity.SaldoUsuarioPrograma;
 import br.edu.ifs.academico.entity.Usuario;
 import br.edu.ifs.academico.entity.enums.Bandeira;
 import br.edu.ifs.academico.entity.enums.Role;
-import br.edu.ifs.academico.entity.enums.StatusMovimentacao;
+import br.edu.ifs.academico.entity.enums.Status;
 import br.edu.ifs.academico.entity.enums.TipoCartao;
 import org.junit.jupiter.api.Test;
 
@@ -37,7 +37,6 @@ class StatusMovimentacaoControllerIT extends IntegrationTestSupport {
                 .nome("Cartao 3")
                 .bandeira(Bandeira.MASTERCARD)
                 .tipo(TipoCartao.CREDITO)
-                .multiplicadorPontos(1.5)
                 .programas(Set.of(programa))
                 .build()));
 
@@ -59,37 +58,37 @@ class StatusMovimentacaoControllerIT extends IntegrationTestSupport {
 
         var payload = toJson(new StatusRequest(
                 movimentacao.getId(),
-                StatusMovimentacao.PENDENTE,
+                Status.PENDENTE,
                 "Aguardando"));
 
         mockMvc.perform(post("/status/criar")
-                .with(bearerToken(token))
-                .contentType("application/json")
-                .content(payload))
+                        .with(bearerToken(token))
+                        .contentType("application/json")
+                        .content(payload))
                 .andExpect(status().isOk());
 
         mockMvc.perform(get("/status/{id}", movimentacao.getId())
-                .with(bearerToken(token)))
+                        .with(bearerToken(token)))
                 .andExpect(status().isOk());
 
         var status = statusMovimentacaoRepository.findByMovimentacaoId(movimentacao.getId()).orElseThrow();
 
         var updatePayload = toJson(new StatusRequest(
                 movimentacao.getId(),
-                StatusMovimentacao.CREDITADO,
+                Status.CREDITADO,
                 "Ok"));
 
         mockMvc.perform(put("/status/{id}", status.getId())
-                .with(bearerToken(token))
-                .contentType("application/json")
-                .content(updatePayload))
+                        .with(bearerToken(token))
+                        .contentType("application/json")
+                        .content(updatePayload))
                 .andExpect(status().isNoContent());
 
         mockMvc.perform(delete("/status/{id}", status.getId())
-                .with(bearerToken(token)))
+                        .with(bearerToken(token)))
                 .andExpect(status().isNoContent());
     }
 
-    private record StatusRequest(Long movimentacaoId, StatusMovimentacao status, String motivo) {
+    private record StatusRequest(Long movimentacaoId, Status status, String motivo) {
     }
 }

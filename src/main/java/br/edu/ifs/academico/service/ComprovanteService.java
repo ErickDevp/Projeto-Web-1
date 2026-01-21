@@ -1,8 +1,10 @@
 package br.edu.ifs.academico.service;
 
-import br.edu.ifs.academico.DTO.ArquivoBytesDTO;
-import br.edu.ifs.academico.DTO.ComprovanteDTO;
+import br.edu.ifs.academico.DTO.comprovante.response.ArquivoBytesResponseDTO;
+import br.edu.ifs.academico.DTO.comprovante.request.ComprovanteRequestDTO;
+import br.edu.ifs.academico.DTO.comprovante.response.ComprovanteResponseDTO;
 import br.edu.ifs.academico.entity.Comprovante;
+import br.edu.ifs.academico.mapper.ComprovanteMapper;
 import br.edu.ifs.academico.repository.ComprovanteRepository;
 import br.edu.ifs.academico.repository.MovimentacaoPontosRepository;
 import org.springframework.beans.factory.annotation.Value;
@@ -23,11 +25,13 @@ public class ComprovanteService {
 
     private final ComprovanteRepository comprovanteRepository;
     private final MovimentacaoPontosRepository movimentacaoRepository;
+    private final ComprovanteMapper comprovanteMapper;
 
     public ComprovanteService(ComprovanteRepository comprovanteRepository,
-            MovimentacaoPontosRepository movimentacaoRepository) {
+                              MovimentacaoPontosRepository movimentacaoRepository, ComprovanteMapper comprovanteMapper) {
         this.comprovanteRepository = comprovanteRepository;
         this.movimentacaoRepository = movimentacaoRepository;
+        this.comprovanteMapper = comprovanteMapper;
     }
 
     @Value("${comprovante.storage.path:uploads/comprovantes}")
@@ -35,16 +39,19 @@ public class ComprovanteService {
 
     // busco todos os comprovantes de determinada movimentacao
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
-    public List<Comprovante> buscarComprovantePorId(Long movimentacaoId, String emailLogado) {
+    public List<ComprovanteResponseDTO> buscarComprovantePorId(Long movimentacaoId, String emailLogado) {
         var movimentacao = movimentacaoRepository
                 .findByIdAndUsuarioEmail(movimentacaoId, emailLogado)
                 .orElseThrow(() -> new RuntimeException("Movimentação não encontrada para este usuário"));
 
-        return comprovanteRepository.findByMovimentacaoId(movimentacao.getId());
+        return comprovanteRepository.findByMovimentacaoId(movimentacao.getId())
+                .stream()
+                .map(comprovanteMapper::toResponseDTO)
+                .toList();
     }
 
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
-    public Long criarComprovante(Long movimentacaoId, MultipartFile file, String emailLogado) {
+    public ComprovanteResponseDTO criarComprovante(Long movimentacaoId, MultipartFile file, String emailLogado) {
         var movimentacao = movimentacaoRepository
                 .findByIdAndUsuarioEmail(movimentacaoId, emailLogado)
                 .orElseThrow(() -> new RuntimeException("Movimentação não encontrada para este usuário"));
@@ -87,40 +94,11 @@ public class ComprovanteService {
                     .tamanho_bytes(file.getSize())
                     .build();
 
-            return comprovanteRepository.save(entity).getId();
+            return comprovanteMapper.toResponseDTO(comprovanteRepository.save(entity));
 
         } catch (IOException e) {
             throw new RuntimeException("Erro ao salvar arquivo: " + e.getMessage(), e);
         }
-    }
-
-    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
-    public void atualizarComprovante(ComprovanteDTO dto, Long id, String emailLogado) {
-
-        var comprovante = comprovanteRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Comprovante não encontrado"));
-
-        if (!comprovante.getMovimentacao().getUsuario().getEmail().equals(emailLogado)) {
-            throw new RuntimeException("Você não pode alterar comprovante de outro usuário");
-        }
-
-        if (dto.caminho() != null)
-            comprovante.setCaminho(dto.caminho());
-        if (dto.tipo_arq() != null)
-            comprovante.setTipo_arq(dto.tipo_arq());
-        if (dto.tamanho_bytes() != null)
-            comprovante.setTamanho_bytes(dto.tamanho_bytes());
-
-        // Se mover o comprovante para outra movimentação, validar também
-        if (dto.movimentacaoId() != null) {
-            var novaMov = movimentacaoRepository
-                    .findByIdAndUsuarioEmail(dto.movimentacaoId(), emailLogado)
-                    .orElseThrow(() -> new RuntimeException("Movimentação não pertence ao usuário"));
-
-            comprovante.setMovimentacao(novaMov);
-        }
-
-        comprovanteRepository.save(comprovante);
     }
 
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
@@ -137,7 +115,7 @@ public class ComprovanteService {
     }
 
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
-    public ArquivoBytesDTO lerBytesComprovante(Long id, String emailLogado) {
+    public ArquivoBytesResponseDTO lerBytesComprovante(Long id, String emailLogado) {
 
         var comprovante = comprovanteRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Comprovante não encontrado"));
@@ -156,7 +134,7 @@ public class ComprovanteService {
             if (contentType == null) {
                 contentType = "application/octet-stream";
             }
-            return new ArquivoBytesDTO(bytes, contentType);
+            return new ArquivoBytesResponseDTO(bytes, contentType);
         } catch (IOException e) {
             throw new RuntimeException("Erro ao ler arquivo: " + e.getMessage(), e);
         }

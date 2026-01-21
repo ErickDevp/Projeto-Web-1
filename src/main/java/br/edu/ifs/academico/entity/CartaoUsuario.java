@@ -2,6 +2,7 @@ package br.edu.ifs.academico.entity;
 
 import br.edu.ifs.academico.entity.enums.Bandeira;
 import br.edu.ifs.academico.entity.enums.TipoCartao;
+import br.edu.ifs.academico.entity.enums.Valido;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -9,6 +10,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -37,8 +39,17 @@ public class CartaoUsuario {
     @Enumerated(EnumType.STRING)
     private TipoCartao tipo;
 
-    @Column(name = "pontos")
-    private Double multiplicadorPontos;
+    private Double pontos;
+
+    private String numero;
+    private LocalDate dataValidade;
+
+    @Transient
+    public Valido getValido() {
+        return dataValidade.isBefore(LocalDate.now())
+                ? Valido.VENCIDO
+                : Valido.ATIVO;
+    }
 
     @Override
     public boolean equals(Object o) {
@@ -60,7 +71,6 @@ public class CartaoUsuario {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "id_usuario", nullable = false)
-    @JsonIgnore
     private Usuario usuario;
 
     @ManyToMany

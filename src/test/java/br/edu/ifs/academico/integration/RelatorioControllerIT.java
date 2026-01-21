@@ -34,7 +34,7 @@ class RelatorioControllerIT extends IntegrationTestSupport {
                 .nome("Cartao Rel")
                 .bandeira(Bandeira.VISA)
                 .tipo(TipoCartao.CREDITO)
-                .multiplicadorPontos(2.0)
+                //.multiplicadorPontos(2.0)
                 .programas(Set.of(programa))
                 .build());
 
@@ -53,17 +53,17 @@ class RelatorioControllerIT extends IntegrationTestSupport {
                 .build());
 
         mockMvc.perform(get("/relatorios")
-                .with(bearerToken(token)))
+                        .with(bearerToken(token)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.saldoGlobal").value(0));
 
         mockMvc.perform(get("/relatorios/csv")
-                .with(bearerToken(token)))
+                        .with(bearerToken(token)))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType("text/csv; charset=UTF-8"));
 
         mockMvc.perform(get("/relatorios/pdf")
-                .with(bearerToken(token)))
+                        .with(bearerToken(token)))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType("application/pdf"));
     }

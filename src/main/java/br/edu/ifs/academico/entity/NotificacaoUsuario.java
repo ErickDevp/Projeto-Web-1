@@ -27,7 +27,6 @@ public class NotificacaoUsuario {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_notificacao", nullable = false)
-    @JsonIgnore
     private Notificacao notificacao;
 
     @Column(nullable = false)
