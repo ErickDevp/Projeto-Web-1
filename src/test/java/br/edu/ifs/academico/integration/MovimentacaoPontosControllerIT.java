@@ -26,11 +26,9 @@ class MovimentacaoPontosControllerIT extends IntegrationTestSupport {
 
     @Test
     void shouldCreateListUpdateAndDeleteMovimentacao() throws Exception {
-        // 1. Criar usuário e fazer login
         Usuario user = createUser("user8@teste.com", Role.USER, DEFAULT_PASSWORD);
         String token = loginAndGetToken(user.getEmail(), DEFAULT_PASSWORD);
 
-        // 2. Criar programa de fidelidade
         ProgramaFidelidade programa = Objects.requireNonNull(
                 programaFidelidadeRepository.save(ProgramaFidelidade.builder()
                         .nome("Programa B")
@@ -38,7 +36,6 @@ class MovimentacaoPontosControllerIT extends IntegrationTestSupport {
                         .build())
         );
 
-        // 3. Criar promoção ativa para o programa
         Promocao promocao = Objects.requireNonNull(
                 promocaoRepository.save(Promocao.builder()
                         .titulo("Promoção Teste Movimentação")
@@ -46,29 +43,28 @@ class MovimentacaoPontosControllerIT extends IntegrationTestSupport {
                         .dataInicio(LocalDate.now().minusMonths(1))
                         .dataFim(LocalDate.now().plusMonths(2))
                         .programa(programa)
-                        .pontosPorReal(2.0) // 2 pontos por real
+                        .pontosPorReal(2.0)
                         .build())
         );
 
-        // 4. Criar cartão do usuário vinculado ao programa
         CartaoUsuario cartao = Objects.requireNonNull(
                 cartaoUsuarioRepository.save(CartaoUsuario.builder()
                         .usuario(user)
                         .nome("Cartao 2")
                         .bandeira(Bandeira.VISA)
                         .tipo(TipoCartao.CREDITO)
+                        .numero("4532123456789012")
+                        .dataValidade(LocalDate.now().plusYears(2))
                         .programas(Set.of(programa))
                         .build())
         );
 
-        // 5. Criar saldo inicial (opcional, mas recomendado)
         saldoUsuarioProgramaRepository.save(SaldoUsuarioPrograma.builder()
                 .usuario(user)
                 .programa(programa)
                 .pontos(0)
                 .build());
 
-        // 6. Criar movimentação (com promocaoId e data)
         var payload = toJson(new MovimentacaoRequest(
                 cartao.getId(),
                 programa.getId(),
@@ -83,10 +79,9 @@ class MovimentacaoPontosControllerIT extends IntegrationTestSupport {
                         .content(payload))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.valor").value(100.00))
-                .andExpect(jsonPath("$.pontos_calculados").value(200)) // 100 * 2.0
+                .andExpect(jsonPath("$.pontos_calculados").value(200))
                 .andExpect(jsonPath("$.status.status").value("PENDENTE"));
 
-        // 7. Listar movimentações
         mockMvc.perform(get("/movimentacao")
                         .with(bearerToken(token)))
                 .andExpect(status().isOk())
@@ -94,14 +89,12 @@ class MovimentacaoPontosControllerIT extends IntegrationTestSupport {
                 .andExpect(jsonPath("$[0].valor").value(100.00))
                 .andExpect(jsonPath("$[0].pontos_calculados").value(200));
 
-        // 8. Buscar a movimentação criada
         MovimentacaoPontos movimentacao = movimentacaoPontosRepository
                 .findByUsuarioId(user.getId())
                 .stream()
                 .findFirst()
                 .orElseThrow(() -> new AssertionError("Movimentação não encontrada"));
 
-        // 9. Atualizar movimentação
         var updatePayload = toJson(new MovimentacaoRequest(
                 cartao.getId(),
                 programa.getId(),
@@ -116,19 +109,16 @@ class MovimentacaoPontosControllerIT extends IntegrationTestSupport {
                         .content(updatePayload))
                 .andExpect(status().isNoContent());
 
-        // 10. Verificar atualização
         mockMvc.perform(get("/movimentacao")
                         .with(bearerToken(token)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].valor").value(50.00))
-                .andExpect(jsonPath("$[0].pontos_calculados").value(100)); // 50 * 2.0
+                .andExpect(jsonPath("$[0].pontos_calculados").value(100));
 
-        // 11. Deletar movimentação
         mockMvc.perform(delete("/movimentacao/{id}", movimentacao.getId())
                         .with(bearerToken(token)))
                 .andExpect(status().isNoContent());
 
-        // 12. Verificar deleção
         assertThat(movimentacaoPontosRepository.findById(movimentacao.getId())).isEmpty();
 
         mockMvc.perform(get("/movimentacao")
@@ -143,7 +133,7 @@ class MovimentacaoPontosControllerIT extends IntegrationTestSupport {
         String token = loginAndGetToken(user.getEmail(), DEFAULT_PASSWORD);
 
         var payload = toJson(new MovimentacaoRequest(
-                999L, // Cartão inexistente
+                999L,
                 1L,
                 1L,
                 new BigDecimal("100.00"),
@@ -159,7 +149,6 @@ class MovimentacaoPontosControllerIT extends IntegrationTestSupport {
 
     @Test
     void shouldNotCreateMovimentacaoWithCartaoFromAnotherUser() throws Exception {
-        // Criar primeiro usuário com cartão
         Usuario user1 = createUser("user10@teste.com", Role.USER, DEFAULT_PASSWORD);
 
         ProgramaFidelidade programa = Objects.requireNonNull(
@@ -186,16 +175,17 @@ class MovimentacaoPontosControllerIT extends IntegrationTestSupport {
                         .nome("Cartao User1")
                         .bandeira(Bandeira.MASTERCARD)
                         .tipo(TipoCartao.CREDITO)
+                        .numero("5412345678901234")
+                        .dataValidade(LocalDate.now().plusYears(3))
                         .programas(Set.of(programa))
                         .build())
         );
 
-        // Criar segundo usuário e tentar usar cartão do primeiro
         Usuario user2 = createUser("user11@teste.com", Role.USER, DEFAULT_PASSWORD);
         String token2 = loginAndGetToken(user2.getEmail(), DEFAULT_PASSWORD);
 
         var payload = toJson(new MovimentacaoRequest(
-                cartaoUser1.getId(), // Cartão de outro usuário
+                cartaoUser1.getId(),
                 programa.getId(),
                 promocao.getId(),
                 new BigDecimal("100.00"),
@@ -214,7 +204,6 @@ class MovimentacaoPontosControllerIT extends IntegrationTestSupport {
         Usuario user = createUser("user12@teste.com", Role.USER, DEFAULT_PASSWORD);
         String token = loginAndGetToken(user.getEmail(), DEFAULT_PASSWORD);
 
-        // Criar dois programas
         ProgramaFidelidade programa1 = Objects.requireNonNull(
                 programaFidelidadeRepository.save(ProgramaFidelidade.builder()
                         .nome("Programa D")
@@ -240,21 +229,21 @@ class MovimentacaoPontosControllerIT extends IntegrationTestSupport {
                         .build())
         );
 
-        // Cartão vinculado apenas ao programa1
         CartaoUsuario cartao = Objects.requireNonNull(
                 cartaoUsuarioRepository.save(CartaoUsuario.builder()
                         .usuario(user)
                         .nome("Cartao Teste")
                         .bandeira(Bandeira.ELO)
                         .tipo(TipoCartao.CREDITO)
-                        .programas(Set.of(programa1)) // Apenas programa1
+                        .numero("6362970000000000")
+                        .dataValidade(LocalDate.now().plusYears(1))
+                        .programas(Set.of(programa1))
                         .build())
         );
 
-        // Tentar criar movimentação com programa2
         var payload = toJson(new MovimentacaoRequest(
                 cartao.getId(),
-                programa2.getId(), // Programa não vinculado ao cartão
+                programa2.getId(),
                 promocao2.getId(),
                 new BigDecimal("100.00"),
                 LocalDate.now()
@@ -279,7 +268,6 @@ class MovimentacaoPontosControllerIT extends IntegrationTestSupport {
                         .build())
         );
 
-        // Promoção com 3.5 pontos por real
         Promocao promocao = Objects.requireNonNull(
                 promocaoRepository.save(Promocao.builder()
                         .titulo("Promoção 3.5x")
@@ -297,6 +285,8 @@ class MovimentacaoPontosControllerIT extends IntegrationTestSupport {
                         .nome("Cartao Teste Calculo")
                         .bandeira(Bandeira.VISA)
                         .tipo(TipoCartao.CREDITO)
+                        .numero("4532987654321098")
+                        .dataValidade(LocalDate.now().plusYears(5))
                         .programas(Set.of(programa))
                         .build())
         );
@@ -311,7 +301,7 @@ class MovimentacaoPontosControllerIT extends IntegrationTestSupport {
                 cartao.getId(),
                 programa.getId(),
                 promocao.getId(),
-                new BigDecimal("123.45"), // Valor com decimais
+                new BigDecimal("123.45"),
                 LocalDate.now()
         ));
 
@@ -321,7 +311,57 @@ class MovimentacaoPontosControllerIT extends IntegrationTestSupport {
                         .content(payload))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.valor").value(123.45))
-                .andExpect(jsonPath("$.pontos_calculados").value(432)); // 123.45 * 3.5 = 432.075 -> 432 (arredondado para baixo)
+                .andExpect(jsonPath("$.pontos_calculados").value(432));
+    }
+
+    @Test
+    void shouldNotCreateMovimentacaoWithExpiredPromocao() throws Exception {
+        Usuario user = createUser("user14@teste.com", Role.USER, DEFAULT_PASSWORD);
+        String token = loginAndGetToken(user.getEmail(), DEFAULT_PASSWORD);
+
+        ProgramaFidelidade programa = Objects.requireNonNull(
+                programaFidelidadeRepository.save(ProgramaFidelidade.builder()
+                        .nome("Programa G")
+                        .descricao("Teste promoção vencida")
+                        .build())
+        );
+
+        Promocao promocaoVencida = Objects.requireNonNull(
+                promocaoRepository.save(Promocao.builder()
+                        .titulo("Promoção Vencida")
+                        .descricao("Esta promoção já expirou")
+                        .dataInicio(LocalDate.now().minusMonths(3))
+                        .dataFim(LocalDate.now().minusDays(1))
+                        .programa(programa)
+                        .pontosPorReal(5.0)
+                        .build())
+        );
+
+        CartaoUsuario cartao = Objects.requireNonNull(
+                cartaoUsuarioRepository.save(CartaoUsuario.builder()
+                        .usuario(user)
+                        .nome("Cartao Teste Vencida")
+                        .bandeira(Bandeira.VISA)
+                        .tipo(TipoCartao.CREDITO)
+                        .numero("4532111122223333")
+                        .dataValidade(LocalDate.now().plusYears(2))
+                        .programas(Set.of(programa))
+                        .build())
+        );
+
+        var payload = toJson(new MovimentacaoRequest(
+                cartao.getId(),
+                programa.getId(),
+                promocaoVencida.getId(),
+                new BigDecimal("100.00"),
+                LocalDate.now()
+        ));
+
+        mockMvc.perform(post("/movimentacao/criar")
+                        .with(bearerToken(token))
+                        .contentType("application/json")
+                        .content(payload))
+                .andExpect(status().isNotFound());
     }
 
     private record MovimentacaoRequest(

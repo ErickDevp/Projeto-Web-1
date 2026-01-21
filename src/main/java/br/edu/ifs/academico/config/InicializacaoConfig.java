@@ -114,11 +114,11 @@ public class InicializacaoConfig {
 
             // 5. Criação dos Cartões
             CartaoUsuario cartaoVisa = getOrCreateCartao(admin, CARTAO_VISA_INFINITE,
-                    Bandeira.VISA);
+                    Bandeira.VISA, "4532123456789012", LocalDate.now().plusYears(3));
             CartaoUsuario cartaoMaster = getOrCreateCartao(admin, CARTAO_MASTERCARD_BLACK,
-                    Bandeira.MASTERCARD);
+                    Bandeira.MASTERCARD, "5412345678901234", LocalDate.now().plusYears(2));
             CartaoUsuario cartaoElo = getOrCreateCartao(admin, CARTAO_ELO_NANQUIM,
-                    Bandeira.ELO);
+                    Bandeira.ELO, "6362970000000000", LocalDate.now().plusYears(4));
 
             // 6. Associação dos Programas aos Cartões
             ensureProgramas(cartaoVisa, livelo, latam);
@@ -204,7 +204,8 @@ public class InicializacaoConfig {
                 });
     }
 
-    private CartaoUsuario getOrCreateCartao(Usuario usuario, String nome, Bandeira bandeira) {
+    private CartaoUsuario getOrCreateCartao(Usuario usuario, String nome,
+                                            Bandeira bandeira, String numero, LocalDate dataValidade) {
         return cartaoRepository.findByNomeAndUsuarioId(nome, usuario.getId())
                 .map(cartaoExistente -> {
                     boolean updated = false;
@@ -216,6 +217,16 @@ public class InicializacaoConfig {
 
                     if (cartaoExistente.getTipo() == null) {
                         cartaoExistente.setTipo(TipoCartao.CREDITO);
+                        updated = true;
+                    }
+
+                    if (cartaoExistente.getNumero() == null) {
+                        cartaoExistente.setNumero(numero);
+                        updated = true;
+                    }
+
+                    if (cartaoExistente.getDataValidade() == null) {
+                        cartaoExistente.setDataValidade(dataValidade);
                         updated = true;
                     }
 
@@ -232,11 +243,14 @@ public class InicializacaoConfig {
                             .nome(nome)
                             .bandeira(bandeira)
                             .tipo(TipoCartao.CREDITO)
+                            .numero(numero)
+                            .dataValidade(dataValidade)
                             .usuario(usuario)
                             .programas(new HashSet<>())
                             .build();
                     CartaoUsuario salvo = cartaoRepository.save(novoCartao);
-                    log.info("✓ Cartão '{}' criado (ID: {})", nome, salvo.getId());
+                    log.info("✓ Cartão '{}' criado (ID: {}, Número: {}..., Validade: {})",
+                            nome, salvo.getId(), numero.substring(0, 4), dataValidade);
                     return salvo;
                 });
     }
@@ -380,4 +394,5 @@ public class InicializacaoConfig {
                     valor, pontosCalculados, promocao.getPontosPorReal(),
                     promocao.getTitulo(), statusEnum);
         }
-    }}
+    }
+}
