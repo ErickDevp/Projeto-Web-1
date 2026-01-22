@@ -5,6 +5,7 @@ import br.edu.ifs.academico.DTO.relatorio.HistoricoMovimentacaoDTO;
 import br.edu.ifs.academico.DTO.relatorio.PontosPorCartaoDTO;
 import br.edu.ifs.academico.DTO.relatorio.RelatorioResponseDTO;
 import br.edu.ifs.academico.entity.MovimentacaoPontos;
+import br.edu.ifs.academico.entity.enums.Status;
 import br.edu.ifs.academico.repository.CartaoUsuarioRepository;
 import br.edu.ifs.academico.repository.MovimentacaoPontosRepository;
 import br.edu.ifs.academico.repository.UsuarioRepository;
@@ -42,7 +43,16 @@ public class RelatorioService {
 
                 // ------------------ Histórico (buscar antes para reutilizar)
                 // ------------------
-                var movs = movRepo.findByUsuarioIdOrderByDataOcorrenciaDesc(usuario.getId());
+                // ------------------ Histórico (buscar antes para reutilizar)
+                // ------------------
+                var todasMovs = movRepo.findByUsuarioIdOrderByDataOcorrenciaDesc(usuario.getId());
+
+                // ------------------ FILTRO GLOBAL: REMOVER CANCELADOS ------------------
+                // Removemos movimentações com status CANCELADO para que não apareçam em
+                // NENHUMA parte do relatório (nem histórico, nem saldo, nem gráficos/tabelas)
+                var movs = todasMovs.stream()
+                                .filter(m -> m.getStatus() == null || m.getStatus().getStatus() != Status.CANCELADO)
+                                .toList();
 
                 // ------------------ Saldo Global ------------------
                 // CORREÇÃO DE INTEGRIDADE: Saldo calculado a partir das movimentações
@@ -50,7 +60,7 @@ public class RelatorioService {
                 // Garante que saldo = soma(movimentações onde creditada == true)
                 // Isso assegura rastreabilidade contábil (princípio da dupla entrada)
                 long saldoGlobal = movs.stream()
-                                .filter(MovimentacaoPontos::isCreditada)
+                                .filter(m -> m.getStatus() != null && m.getStatus().getStatus() == Status.CREDITADO)
                                 .mapToLong(m -> m.getPontos_calculados() != null ? m.getPontos_calculados() : 0)
                                 .sum();
 
@@ -58,7 +68,8 @@ public class RelatorioService {
 
                         // CORREÇÃO: Apenas movimentações CREDITADAS contam para o total por cartão
                         long total = movs.stream()
-                                        .filter(m -> m.isCreditada())
+                                        .filter(m -> m.getStatus() != null
+                                                        && m.getStatus().getStatus() == Status.CREDITADO)
                                         .filter(m -> m.getCartao().getId().equals(cartao.getId()))
                                         .mapToLong(m -> m.getPontos_calculados() != null ? m.getPontos_calculados() : 0)
                                         .sum();
@@ -86,7 +97,7 @@ public class RelatorioService {
                 // ------------------ Evolução Mensal ------------------
                 // CORREÇÃO: Apenas movimentações CREDITADAS para consistência com saldoGlobal
                 Map<YearMonth, Long> totalPorMes = movs.stream()
-                                .filter(m -> m.isCreditada())
+                                .filter(m -> m.getStatus() != null && m.getStatus().getStatus() == Status.CREDITADO)
                                 .filter(m -> m.getDataOcorrencia() != null)
                                 .collect(Collectors.groupingBy(
                                                 m -> YearMonth.from(m.getDataOcorrencia()),

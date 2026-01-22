@@ -290,42 +290,42 @@ public class InicializacaoConfig {
 
                 log.info("Criando movimentações de exemplo...");
 
-                // Movimentação 1: Compra grande no Visa Infinite (Livelo - 2.5x)
+                // Movimentação 1
                 criarMovimentacaoSeNaoExiste(admin, saldoLivelo, cartaoVisa, promocaoLivelo,
                                 BigDecimal.valueOf(12990.00),
                                 LocalDate.now().minusMonths(3).withDayOfMonth(5),
                                 Status.CREDITADO,
                                 "Compra grande no Visa Infinite");
 
-                // Movimentação 2: Compra recorrente no Mastercard Black (Esfera - 2.0x)
+                // Movimentação 2
                 criarMovimentacaoSeNaoExiste(admin, saldoEsfera, cartaoMaster, promocaoEsfera,
                                 BigDecimal.valueOf(3290.00),
                                 LocalDate.now().minusMonths(2).withDayOfMonth(12),
                                 Status.CREDITADO,
                                 "Compra recorrente no Mastercard Black");
 
-                // Movimentação 3: Compra de rotina no Mastercard Black (Esfera - 2.0x)
+                // Movimentação 3
                 criarMovimentacaoSeNaoExiste(admin, saldoEsfera, cartaoMaster, promocaoEsfera,
                                 BigDecimal.valueOf(1850.00),
                                 LocalDate.now().minusMonths(1).withDayOfMonth(3),
                                 Status.CREDITADO,
                                 "Compra de rotina no Mastercard Black");
 
-                // Movimentação 4: Compra recente PENDENTE (Livelo - 2.5x)
+                // Movimentação 4
                 criarMovimentacaoSeNaoExiste(admin, saldoLivelo, cartaoVisa, promocaoLivelo,
                                 BigDecimal.valueOf(2250.00),
                                 LocalDate.now().withDayOfMonth(8),
                                 Status.PENDENTE,
                                 "Compra recente aguardando crédito");
 
-                // Movimentação 5: Compra pequena no Elo Nanquim (Latam - 1.2x)
+                // Movimentação 5
                 criarMovimentacaoSeNaoExiste(admin, saldoLatam, cartaoElo, promocaoLatam,
                                 BigDecimal.valueOf(600.00),
                                 LocalDate.now().minusMonths(1).withDayOfMonth(22),
                                 Status.CREDITADO,
                                 "Compra pequena no Elo Nanquim");
 
-                // Movimentação 6: Uso pouco frequente do Elo Nanquim (Latam - 1.2x)
+                // Movimentação 6
                 criarMovimentacaoSeNaoExiste(admin, saldoLatam, cartaoElo, promocaoLatam,
                                 BigDecimal.valueOf(320.00),
                                 LocalDate.now().minusMonths(3).withDayOfMonth(19),
@@ -339,7 +339,7 @@ public class InicializacaoConfig {
                         SaldoUsuarioPrograma saldo, CartaoUsuario cartao, Promocao promocao,
                         BigDecimal valor, LocalDate data, Status statusEnum, String motivo) {
 
-                // Calcula pontos baseado na promoção (mesmo cálculo do service)
+                // Calcula pontos
                 int pontosCalculados = valor
                                 .multiply(BigDecimal.valueOf(promocao.getPontosPorReal()))
                                 .setScale(0, RoundingMode.DOWN)
@@ -359,7 +359,9 @@ public class InicializacaoConfig {
                         return;
                 }
 
-                // Cria a movimentação (usando o saldo passado apenas como referência de ID)
+                // Define a flag boolean baseada no status enum
+                boolean isCreditada = (statusEnum == Status.CREDITADO);
+
                 MovimentacaoPontos movimentacao = MovimentacaoPontos.builder()
                                 .valor(valor)
                                 .pontos_calculados(pontosCalculados)
@@ -367,6 +369,7 @@ public class InicializacaoConfig {
                                 .usuario(usuario)
                                 .saldo(saldo)
                                 .cartao(cartao)
+                                .creditada(isCreditada)
                                 .build();
 
                 // Cria o status associado
@@ -376,21 +379,14 @@ public class InicializacaoConfig {
                                 .movimentacao(movimentacao)
                                 .build();
 
-                // Relacionamento bidirecional
                 movimentacao.setStatus(status);
-
-                // Salva a movimentação
                 movimentacaoRepository.save(movimentacao);
 
                 // Atualiza saldo apenas se CREDITADO
-                if (statusEnum == Status.CREDITADO) {
-                        // CORREÇÃO: Busca o saldo atualizado do banco para garantir que a entidade está
-                        // gerenciada (Managed)
-                        // Isso evita erros de concorrência ou atualização de objeto desconectado
-                        // (Detached)
+                if (isCreditada) {
+                        // Busca o saldo atualizado
                         var saldoAtualizado = saldoRepository.findById(saldo.getId())
-                                        .orElseThrow(() -> new RuntimeException(
-                                                        "Saldo não encontrado para atualização"));
+                                        .orElseThrow(() -> new RuntimeException("Saldo não encontrado"));
 
                         saldoAtualizado.setPontos(saldoAtualizado.getPontos() + pontosCalculados);
                         saldoRepository.save(saldoAtualizado);
