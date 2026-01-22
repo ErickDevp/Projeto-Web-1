@@ -13,8 +13,8 @@ public class UsuarioMapper {
                 usuario.getId(),
                 usuario.getNome(),
                 usuario.getEmail(),
+                usuario.getRole(),
                 usuario.getCriado_em(),
-                usuario.getCaminhoFoto()
-        );
+                usuario.getCaminhoFoto());
     }
 }
