@@ -7,6 +7,7 @@ import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 import java.util.List;
 
@@ -26,18 +27,21 @@ public class PromocaoController {
     }
 
     @PostMapping("/criar")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<PromocaoResponseDTO> criarPromocao(
             @Valid @RequestBody PromocaoRequestDTO promocaoRequestDTO) {
         return ResponseEntity.status(HttpStatus.CREATED).body(promocaoService.criarPromocao(promocaoRequestDTO));
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<PromocaoResponseDTO> atualizarPromocao(@PathVariable Long id,
             @Valid @RequestBody PromocaoRequestDTO promocaoRequestDTO) {
         return ResponseEntity.ok(promocaoService.atualizarPromocao(promocaoRequestDTO, id));
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> apagarPromocao(@PathVariable Long id) {
         promocaoService.apagarPromocao(id);
         return ResponseEntity.noContent().build();

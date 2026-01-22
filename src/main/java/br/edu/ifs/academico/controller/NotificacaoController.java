@@ -33,6 +33,7 @@ public class NotificacaoController {
     }
 
     @PostMapping("/criar")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<NotificacaoResponseDTO> criarNotificacao(
             @Valid @RequestBody NotificacaoRequestDTO notificacaoRequestDTO) {
         return ResponseEntity.status(HttpStatus.CREATED)
@@ -40,6 +41,7 @@ public class NotificacaoController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<NotificacaoResponseDTO> atualizarNotificacao(@PathVariable Long id,
             @Valid @RequestBody NotificacaoRequestDTO notificacaoRequestDTO) {
         return ResponseEntity.ok(notificacaoService.atualizarNotificacao(notificacaoRequestDTO, id));
