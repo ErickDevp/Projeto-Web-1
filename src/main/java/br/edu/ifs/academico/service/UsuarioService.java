@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.UUID;
 
 @Service
@@ -71,49 +72,74 @@ public class UsuarioService {
 
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     public void salvarFotoPerfil(MultipartFile file, String emailLogado) {
+
         var usuario = usuarioRepository.findByEmail(emailLogado)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuário não encontrado"));
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "Usuário não encontrado"));
 
         if (file == null || file.isEmpty()) {
-            throw new RuntimeException("Arquivo vazio");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Arquivo vazio");
         }
 
+        // 🔒 tamanho máximo 5MB
+        long maxSize = 5 * 1024 * 1024;
+        if (file.getSize() > maxSize) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST, "Arquivo excede 5MB");
+        }
+
+        // 🖼️ tipos permitidos
         String contentType = file.getContentType();
-        if (contentType == null ||
-                !(contentType.equals("image/png") || contentType.equals("image/jpeg"))) {
-            throw new RuntimeException("Tipo de arquivo não suportado. Aceito: png, jpg");
+        if (contentType == null || !isTipoPermitido(contentType)) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST, "Formato inválido. Aceito: JPG, PNG, GIF");
         }
 
         try {
             Path base = Paths.get(storagePath).toAbsolutePath().normalize();
             Files.createDirectories(base);
 
-            String original = file.getOriginalFilename();
-            String ext = "";
-            if (original != null && original.contains(".")) {
-                ext = original.substring(original.lastIndexOf('.'));
-            } else if (contentType.equals("image/png"))
-                ext = ".png";
-            else if (contentType.equals("image/jpeg"))
-                ext = ".jpg";
-
-            String filename = UUID.randomUUID().toString() + ext;
+            String ext = obterExtensao(file, contentType);
+            String filename = UUID.randomUUID() + ext;
             Path target = base.resolve(filename);
 
-            Files.copy(file.getInputStream(), target);
+            // sobrescreve se existir (mais seguro)
+            Files.copy(file.getInputStream(), target, StandardCopyOption.REPLACE_EXISTING);
 
             usuario.setCaminhoFoto(target.toString());
             usuarioRepository.save(usuario);
 
         } catch (IOException e) {
-            throw new RuntimeException("Erro ao salvar arquivo: " + e.getMessage(), e);
+            throw new RuntimeException("Erro ao salvar arquivo", e);
         }
+    }
+
+    private boolean isTipoPermitido(String contentType) {
+        return contentType.equals("image/jpeg")
+                || contentType.equals("image/png")
+                || contentType.equals("image/gif");
+    }
+
+    private String obterExtensao(MultipartFile file, String contentType) {
+        String original = file.getOriginalFilename();
+        if (original != null && original.contains(".")) {
+            return original.substring(original.lastIndexOf("."));
+        }
+
+        return switch (contentType) {
+            case "image/png" -> ".png";
+            case "image/jpeg" -> ".jpg";
+            case "image/gif" -> ".gif";
+            default -> "";
+        };
     }
 
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     public ArquivoBytesResponseDTO lerFotoPerfil(String emailLogado) {
+
         var usuario = usuarioRepository.findByEmail(emailLogado)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuário não encontrado"));
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "Usuário não encontrado"));
 
         if (usuario.getCaminhoFoto() == null || usuario.getCaminhoFoto().isBlank()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Foto não encontrada");
@@ -121,14 +147,24 @@ public class UsuarioService {
 
         try {
             Path path = Paths.get(usuario.getCaminhoFoto());
+
+            if (!Files.exists(path)) {
+                throw new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Arquivo não existe no servidor");
+            }
+
             byte[] bytes = Files.readAllBytes(path);
             String contentType = Files.probeContentType(path);
+
             if (contentType == null) {
                 contentType = "application/octet-stream";
             }
+
             return new ArquivoBytesResponseDTO(bytes, contentType);
+
         } catch (IOException e) {
-            throw new RuntimeException("Erro ao ler arquivo: " + e.getMessage(), e);
+            throw new RuntimeException("Erro ao ler arquivo", e);
         }
     }
 }

@@ -42,10 +42,15 @@ public class UsuarioController {
         return ResponseEntity.noContent().build();
     }
 
-    @PostMapping(value = "/foto", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<Void> salvarFoto(@RequestParam("file") MultipartFile file,
+    @PostMapping(
+            value = "/foto-perfil",
+            consumes = MediaType.MULTIPART_FORM_DATA_VALUE
+    )
+    public ResponseEntity<Void> salvarFoto(
+            @RequestParam("foto") MultipartFile foto,
             @AuthenticationPrincipal UserDetails userDetails) {
-        usuarioService.salvarFotoPerfil(file, userDetails.getUsername());
+
+        usuarioService.salvarFotoPerfil(foto, userDetails.getUsername());
         return ResponseEntity.ok().build();
     }
 
@@ -56,4 +61,5 @@ public class UsuarioController {
                 .contentType(MediaType.parseMediaType(arquivo.contentType()))
                 .body(arquivo.bytes());
     }
+
 }
