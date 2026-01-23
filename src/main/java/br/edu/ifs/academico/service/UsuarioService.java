@@ -9,6 +9,7 @@ import br.edu.ifs.academico.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.multipart.MultipartFile;
@@ -25,11 +26,12 @@ public class UsuarioService {
 
     private final UsuarioRepository usuarioRepository;
     private final UsuarioMapper usuarioMapper;
+    private final BCryptPasswordEncoder passwordEncoder;
 
-
-    public UsuarioService(UsuarioRepository usuarioRepository, UsuarioMapper usuarioMapper) {
+    public UsuarioService(UsuarioRepository usuarioRepository, UsuarioMapper usuarioMapper, BCryptPasswordEncoder passwordEncoder) {
         this.usuarioRepository = usuarioRepository;
         this.usuarioMapper = usuarioMapper;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Value("${usuario.foto.storage.path:uploads/usuarios}")
@@ -52,6 +54,9 @@ public class UsuarioService {
             usuario.setNome(usuarioRequestDTO.nome());
         if (usuarioRequestDTO.email() != null)
             usuario.setEmail(usuarioRequestDTO.email());
+        if (usuarioRequestDTO.novaSenha() != null) {
+            usuario.setSenha(passwordEncoder.encode(usuarioRequestDTO.novaSenha()));
+        }
 
         return usuarioMapper.toResponseDTO(usuarioRepository.save(usuario));
     }
