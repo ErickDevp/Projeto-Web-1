@@ -8,6 +8,7 @@ public record NotificacaoResponseDTO (
         String mensagem,
         String tipo,
         LocalDateTime dataCriacao,
+        LocalDateTime dataExpiracao,
         boolean lida
 ){
 }
