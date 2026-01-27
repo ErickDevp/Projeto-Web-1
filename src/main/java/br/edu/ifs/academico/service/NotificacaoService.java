@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalDateTime;
 import java.util.Set;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -84,6 +85,7 @@ public class NotificacaoService {
                 .titulo(notificacaoRequestDTO.titulo())
                 .mensagem(notificacaoRequestDTO.mensagem())
                 .tipo(notificacaoRequestDTO.tipo())
+                .dataExpiracao(LocalDateTime.now().plusDays(notificacaoRequestDTO.prazoDia()))
                 .build();
 
         return notificacaoMapper.toResponseDTO(notificacaoRepository.save(entity));

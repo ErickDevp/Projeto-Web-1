@@ -23,6 +23,7 @@ public class Notificacao {
     private String titulo;
     private String mensagem;
     private String tipo;
+    private LocalDateTime dataExpiracao;
     boolean lida;
 
     @Column(name = "data_criacao", updatable = false)

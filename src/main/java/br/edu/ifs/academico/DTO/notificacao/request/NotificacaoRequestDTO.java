@@ -1,7 +1,11 @@
 package br.edu.ifs.academico.DTO.notificacao.request;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
+
+import java.time.LocalDateTime;
 
 public record NotificacaoRequestDTO(
 
@@ -14,6 +18,10 @@ public record NotificacaoRequestDTO(
         String mensagem,
 
         @NotBlank(message = "O tipo da notificação é obrigatório")
-        String tipo
+        String tipo,
+
+        @NotNull(message = "Prazo é obrigatório")
+        @Positive(message = "Prazo deve ser maior que zero")
+        long prazoDia
 ) {
 }
