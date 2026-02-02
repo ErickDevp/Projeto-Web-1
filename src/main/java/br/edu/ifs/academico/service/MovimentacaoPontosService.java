@@ -29,17 +29,19 @@ public class MovimentacaoPontosService {
         private final UsuarioRepository usuarioRepository;
         private final SaldoUsuarioProgramaRepository saldoRepository;
         private final CartaoUsuarioRepository cartaoRepository;
+        private final ProgramaFidelidadeRepository programaRepository;
         private final MovimentacaoMapper movimentacaoMapper;
         private final StatusMovimentacaoRepository statusRepository;
 
         public MovimentacaoPontosService(MovimentacaoPontosRepository movimentacaoRepository,
                         UsuarioRepository usuarioRepository, SaldoUsuarioProgramaRepository saldoRepository,
-                        CartaoUsuarioRepository cartaoRepository, MovimentacaoMapper movimentacaoMapper,
-                        StatusMovimentacaoRepository statusRepository) {
+                        CartaoUsuarioRepository cartaoRepository, ProgramaFidelidadeRepository programaRepository,
+                        MovimentacaoMapper movimentacaoMapper, StatusMovimentacaoRepository statusRepository) {
                 this.movimentacaoRepository = movimentacaoRepository;
                 this.usuarioRepository = usuarioRepository;
                 this.saldoRepository = saldoRepository;
                 this.cartaoRepository = cartaoRepository;
+                this.programaRepository = programaRepository;
                 this.movimentacaoMapper = movimentacaoMapper;
                 this.statusRepository = statusRepository;
         }
@@ -107,40 +109,53 @@ public class MovimentacaoPontosService {
 
         @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
         @Transactional
-        public MovimentacaoResponseDTO criarMovimentacao(MovimentacaoRequestDTO movimentacaoRequestDTO,
+        public MovimentacaoResponseDTO criarMovimentacao(MovimentacaoRequestDTO dto,
                         String emailLogado) {
 
                 var usuario = usuarioRepository.findByEmail(emailLogado)
                                 .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
 
-                var cartao = cartaoRepository.findById(movimentacaoRequestDTO.cartaoId())
-                                .orElseThrow(() -> new RuntimeException("Cartão não encontrado"));
+                // Validar: pelo menos valor OU quantidadePontos deve estar presente
+                boolean isResgate = dto.quantidadePontos() != null;
+                boolean isAcumulo = dto.valor() != null;
 
-                if (!cartao.getUsuario().getId().equals(usuario.getId())) {
-                        throw new ResponseStatusException(
-                                        HttpStatus.FORBIDDEN,
-                                        "Você não tem permissão para registrar movimentações neste cartão");
+                if (!isResgate && !isAcumulo) {
+                        throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                                        "Informe 'valor' para acúmulo ou 'quantidadePontos' para resgate");
                 }
 
-                if (cartao.getDataValidade().isBefore(LocalDate.now())) {
-                        throw new RuntimeException("Cartão vencido");
+                // Para ACÚMULO: cartaoId é obrigatório
+                if (isAcumulo && dto.cartaoId() == null) {
+                        throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                                        "O cartão é obrigatório para acúmulo de pontos");
                 }
 
-                var programa = cartao.getProgramas()
-                                .stream()
-                                .filter(p -> p.getId().equals(movimentacaoRequestDTO.programaId()))
-                                .findFirst()
-                                .orElseThrow(() -> new RuntimeException("Programa não encontrado nesse cartão"));
+                // Buscar cartão (obrigatório para acúmulo, opcional para resgate)
+                var cartao = dto.cartaoId() != null
+                                ? cartaoRepository.findById(dto.cartaoId())
+                                                .orElseThrow(() -> new RuntimeException("Cartão não encontrado"))
+                                : null;
 
-                var promocao = programa.getPromocoes()
-                                .stream()
-                                .filter(p -> p.getId().equals(movimentacaoRequestDTO.promocaoId()))
-                                .findFirst()
-                                .orElseThrow(() -> new RuntimeException("Promoção não encontrada para este programa"));
-
-                if (promocao.getDataFim().isBefore(LocalDate.now())) {
-                        throw new RuntimeException("Promoção vencida");
+                // Validações de cartão (apenas se fornecido)
+                if (cartao != null) {
+                        if (!cartao.getUsuario().getId().equals(usuario.getId())) {
+                                throw new ResponseStatusException(HttpStatus.FORBIDDEN,
+                                                "Você não tem permissão para registrar movimentações neste cartão");
+                        }
+                        if (cartao.getDataValidade().isBefore(LocalDate.now())) {
+                                throw new RuntimeException("Cartão vencido");
+                        }
                 }
+
+                // Buscar programa: via cartão (acúmulo) ou diretamente (resgate)
+                var programa = isResgate
+                                ? programaRepository.findById(dto.programaId())
+                                                .orElseThrow(() -> new RuntimeException("Programa não encontrado"))
+                                : cartao.getProgramas().stream()
+                                                .filter(p -> p.getId().equals(dto.programaId()))
+                                                .findFirst()
+                                                .orElseThrow(() -> new RuntimeException(
+                                                                "Programa não encontrado nesse cartão"));
 
                 var saldo = saldoRepository.findByUsuarioIdAndProgramaId(usuario.getId(), programa.getId())
                                 .orElseGet(() -> saldoRepository.save(
@@ -150,10 +165,37 @@ public class MovimentacaoPontosService {
                                                                 .pontos(0)
                                                                 .build()));
 
-                int pontosCalculados = movimentacaoRequestDTO.valor()
-                                .multiply(BigDecimal.valueOf(promocao.getPontosPorReal()))
-                                .setScale(0, RoundingMode.DOWN)
-                                .intValue();
+                int pontosCalculados;
+                BigDecimal valorMovimentacao;
+
+                if (isResgate) {
+                        // RESGATE: usar quantidadePontos diretamente (negativo = saída)
+                        pontosCalculados = -Math.abs(dto.quantidadePontos());
+                        valorMovimentacao = BigDecimal.ZERO;
+
+                        // Validar saldo suficiente
+                        if (saldo.getPontos() < Math.abs(pontosCalculados)) {
+                                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                                                "Saldo de pontos insuficiente");
+                        }
+                } else {
+                        // ACÚMULO: cálculo existente (valor × pontosPorReal)
+                        var promocao = programa.getPromocoes().stream()
+                                        .filter(p -> p.getId().equals(dto.promocaoId()))
+                                        .findFirst()
+                                        .orElseThrow(() -> new RuntimeException(
+                                                        "Promoção não encontrada para este programa"));
+
+                        if (promocao.getDataFim().isBefore(LocalDate.now())) {
+                                throw new RuntimeException("Promoção vencida");
+                        }
+
+                        pontosCalculados = dto.valor()
+                                        .multiply(BigDecimal.valueOf(promocao.getPontosPorReal()))
+                                        .setScale(0, RoundingMode.DOWN)
+                                        .intValue();
+                        valorMovimentacao = dto.valor();
+                }
 
                 StatusMovimentacao status = StatusMovimentacao.builder()
                                 .status(Status.PENDENTE)
@@ -163,11 +205,11 @@ public class MovimentacaoPontosService {
                 MovimentacaoPontos movimentacao = MovimentacaoPontos.builder()
                                 .usuario(usuario)
                                 .saldo(saldo)
-                                .cartao(cartao)
-                                .valor(movimentacaoRequestDTO.valor())
+                                .cartao(cartao) // null para resgates
+                                .valor(valorMovimentacao)
                                 .pontos_calculados(pontosCalculados)
                                 .status(status)
-                                .dataOcorrencia(movimentacaoRequestDTO.data())
+                                .dataOcorrencia(dto.data())
                                 .build();
 
                 status.setMovimentacao(movimentacao);

@@ -1,5 +1,6 @@
 package br.edu.ifs.academico.entity;
 
+import br.edu.ifs.academico.entity.enums.CategoriaPrograma;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -25,6 +26,9 @@ public class ProgramaFidelidade {
 
     private String nome;
     private String descricao;
+
+    @Enumerated(EnumType.STRING)
+    private CategoriaPrograma categoria;
 
     @Override
     public boolean equals(Object o) {

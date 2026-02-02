@@ -11,33 +11,35 @@ import java.util.List;
 @Component
 public class ProgramaMapper {
 
-    public ProgramaResponseDTO toResponseDTO(ProgramaFidelidade programa) {
+        public ProgramaResponseDTO toResponseDTO(ProgramaFidelidade programa) {
 
-        return new ProgramaResponseDTO(
-                programa.getId(),
-                programa.getNome(),
-                programa.getDescricao());
-    }
+                return new ProgramaResponseDTO(
+                                programa.getId(),
+                                programa.getNome(),
+                                programa.getDescricao(),
+                                programa.getCategoria());
+        }
 
-    public ProgramaComPromocoesResponseDTO toProgramaPromocaoResponseDTO(ProgramaFidelidade programa) {
+        public ProgramaComPromocoesResponseDTO toProgramaPromocaoResponseDTO(ProgramaFidelidade programa) {
 
-        List<PromocaoProgramaResponseDTO> promocoes = programa.getPromocoes() == null
-                ? List.of()
-                : programa.getPromocoes().stream()
-                        .map(pc -> new PromocaoProgramaResponseDTO(
-                                pc.getId(),
-                                pc.getTitulo(),
-                                pc.getDescricao(),
-                                pc.getPontosPorReal(),
-                                pc.getDataInicio(),
-                                pc.getDataFim(),
-                                pc.getValido()))
-                        .toList();
+                List<PromocaoProgramaResponseDTO> promocoes = programa.getPromocoes() == null
+                                ? List.of()
+                                : programa.getPromocoes().stream()
+                                                .map(pc -> new PromocaoProgramaResponseDTO(
+                                                                pc.getId(),
+                                                                pc.getTitulo(),
+                                                                pc.getDescricao(),
+                                                                pc.getPontosPorReal(),
+                                                                pc.getDataInicio(),
+                                                                pc.getDataFim(),
+                                                                pc.getValido()))
+                                                .toList();
 
-        return new ProgramaComPromocoesResponseDTO(
-                programa.getId(),
-                programa.getNome(),
-                programa.getDescricao(),
-                promocoes);
-    }
+                return new ProgramaComPromocoesResponseDTO(
+                                programa.getId(),
+                                programa.getNome(),
+                                programa.getDescricao(),
+                                programa.getCategoria(),
+                                promocoes);
+        }
 }

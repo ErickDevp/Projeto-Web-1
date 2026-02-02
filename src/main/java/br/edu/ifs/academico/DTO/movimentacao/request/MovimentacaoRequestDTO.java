@@ -10,23 +10,15 @@ import java.time.LocalDate;
 
 public record MovimentacaoRequestDTO(
 
-        @NotNull(message = "O cartão é obrigatório")
-        @Positive(message = "O id do cartão deve ser positivo")
-        Long cartaoId,
+                @Positive(message = "O id do cartão deve ser positivo") Long cartaoId,
 
-        @NotNull(message = "O programa é obrigatório")
-        @Positive(message = "O id do programa deve ser positivo")
-        Long programaId,
+                @NotNull(message = "O programa é obrigatório") @Positive(message = "O id do programa deve ser positivo") Long programaId,
 
-        @Positive(message = "O id da promoção deve ser positivo")
-        Long promocaoId,
+                @Positive(message = "O id da promoção deve ser positivo") Long promocaoId,
 
-        @NotNull(message = "O valor é obrigatório")
-        @DecimalMin(value = "0.01", message = "O valor deve ser maior que zero")
-        BigDecimal valor,
+                @DecimalMin(value = "0.01", message = "O valor deve ser maior que zero") BigDecimal valor,
 
-        @NotNull(message = "A data é obrigatória")
-        @PastOrPresent(message = "A data não pode ser futura")
-        LocalDate data
-) {
+                @Positive(message = "A quantidade de pontos deve ser positiva") Integer quantidadePontos,
+
+                @NotNull(message = "A data é obrigatória") @PastOrPresent(message = "A data não pode ser futura") LocalDate data) {
 }

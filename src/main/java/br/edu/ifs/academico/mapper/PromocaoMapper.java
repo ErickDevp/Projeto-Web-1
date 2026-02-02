@@ -22,8 +22,7 @@ public class PromocaoMapper {
                 new ProgramaResponseDTO(
                         promocao.getPrograma().getId(),
                         promocao.getPrograma().getNome(),
-                        promocao.getPrograma().getDescricao()
-                )
-        );
+                        promocao.getPrograma().getDescricao(),
+                        promocao.getPrograma().getCategoria()));
     }
 }

@@ -16,8 +16,7 @@ public class SaldoMapper {
                 new ProgramaResponseDTO(
                         saldo.getPrograma().getId(),
                         saldo.getPrograma().getNome(),
-                        saldo.getPrograma().getDescricao()
-                )
-        );
+                        saldo.getPrograma().getDescricao(),
+                        saldo.getPrograma().getCategoria()));
     }
 }

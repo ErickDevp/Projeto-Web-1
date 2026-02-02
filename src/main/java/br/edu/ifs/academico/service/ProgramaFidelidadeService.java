@@ -20,7 +20,7 @@ public class ProgramaFidelidadeService {
     private final ProgramaMapper programaMapper;
 
     public ProgramaFidelidadeService(ProgramaFidelidadeRepository programaRepository,
-                                     CartaoUsuarioRepository cartaoRepository, ProgramaMapper programaMapper) {
+            CartaoUsuarioRepository cartaoRepository, ProgramaMapper programaMapper) {
         this.programaRepository = programaRepository;
         this.cartaoRepository = cartaoRepository;
         this.programaMapper = programaMapper;
@@ -40,6 +40,7 @@ public class ProgramaFidelidadeService {
         ProgramaFidelidade entity = ProgramaFidelidade.builder()
                 .nome(programaRequestDTO.nome())
                 .descricao(programaRequestDTO.descricao())
+                .categoria(programaRequestDTO.categoria())
                 .build();
 
         return programaMapper.toResponseDTO(programaRepository.save(entity));
@@ -55,6 +56,9 @@ public class ProgramaFidelidadeService {
         }
         if (programaRequestDTO.descricao() != null) {
             programa.setDescricao(programaRequestDTO.descricao());
+        }
+        if (programaRequestDTO.categoria() != null) {
+            programa.setCategoria(programaRequestDTO.categoria());
         }
 
         return programaMapper.toResponseDTO(programaRepository.save(programa));
