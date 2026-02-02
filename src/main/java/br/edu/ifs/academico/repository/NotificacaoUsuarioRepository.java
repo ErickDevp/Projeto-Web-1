@@ -19,6 +19,8 @@ public interface NotificacaoUsuarioRepository extends JpaRepository<NotificacaoU
 
     void deleteByNotificacao_Id(Long notificacaoId);
 
+    void deleteByNotificacao_IdIn(List<Long> notificacaoIds);
+
     void deleteByNotificacao_IdAndUsuario_Id(Long notificacaoId, Long usuarioId);
 
     Optional<NotificacaoUsuario> findByNotificacao_IdAndUsuario_Id(Long notificacaoId, Long usuarioId);
