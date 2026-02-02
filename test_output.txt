@@ -1,0 +1,156 @@
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] -------------------< br.edu.ifs.academico:Academico >-------------------
+[INFO] Building Academico 0.0.1-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ Academico ---
+[INFO] Copying 1 resource from src\main\resources to target\classes
+[INFO] Copying 1 resource from src\main\resources to target\classes
+[INFO] 
+[INFO] --- compiler:3.14.1:compile (default-compile) @ Academico ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- resources:3.3.1:testResources (default-testResources) @ Academico ---
+[INFO] Copying 1 resource from src\test\resources to target\test-classes
+[INFO] 
+[INFO] --- compiler:3.14.1:testCompile (default-testCompile) @ Academico ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- surefire:3.5.4:test (default-test) @ Academico ---
+[INFO] Using auto detected provider org.apache.maven.surefire.junitplatform.JUnitPlatformProvider
+[INFO] 
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+[INFO] Running br.edu.ifs.academico.service.AuthServiceTest
+Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
+WARNING: A Java agent has been loaded dynamically (C:\Users\Fabrício Gregório\.m2\repository\net\bytebuddy\byte-buddy-agent\1.17.8\byte-buddy-agent-1.17.8.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+Java HotSpot(TM) 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 3.581 s -- in br.edu.ifs.academico.service.AuthServiceTest
+[INFO] Running br.edu.ifs.academico.service.JwtServiceTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.555 s -- in br.edu.ifs.academico.service.JwtServiceTest
+[INFO] Running br.edu.ifs.academico.service.MovimentacaoPontosServiceTest
+[ERROR] Tests run: 6, Failures: 0, Errors: 6, Skipped: 0, Time elapsed: 0.132 s <<< FAILURE! -- in br.edu.ifs.academico.service.MovimentacaoPontosServiceTest
+[ERROR] br.edu.ifs.academico.service.MovimentacaoPontosServiceTest.apagarMovimentacao_DeveDeduzirSaldo -- Time elapsed: 0.024 s <<< ERROR!
+java.lang.Error: 
+Unresolved compilation problem: 
+	Status cannot be resolved to a variable
+
+	at br.edu.ifs.academico.service.MovimentacaoPontosServiceTest.<init>(MovimentacaoPontosServiceTest.java:93)
+	at java.base/java.lang.reflect.Constructor.newInstanceWithCaller(Constructor.java:502)
+	at java.base/java.lang.reflect.Constructor.newInstance(Constructor.java:486)
+	at java.base/java.util.Optional.orElseGet(Optional.java:364)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+
+[ERROR] br.edu.ifs.academico.service.MovimentacaoPontosServiceTest.criarMovimentacao_DeveCalcularPontosCorretamente -- Time elapsed: 0.003 s <<< ERROR!
+java.lang.Error: 
+Unresolved compilation problem: 
+	Status cannot be resolved to a variable
+
+	at br.edu.ifs.academico.service.MovimentacaoPontosServiceTest.<init>(MovimentacaoPontosServiceTest.java:93)
+	at java.base/java.lang.reflect.Constructor.newInstanceWithCaller(Constructor.java:502)
+	at java.base/java.lang.reflect.Constructor.newInstance(Constructor.java:486)
+	at java.base/java.util.Optional.orElseGet(Optional.java:364)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+
+[ERROR] br.edu.ifs.academico.service.MovimentacaoPontosServiceTest.criarMovimentacao_DeveLancarErro_QuandoCartaoDeOutroUsuario -- Time elapsed: 0.003 s <<< ERROR!
+java.lang.Error: 
+Unresolved compilation problem: 
+	Status cannot be resolved to a variable
+
+	at br.edu.ifs.academico.service.MovimentacaoPontosServiceTest.<init>(MovimentacaoPontosServiceTest.java:93)
+	at java.base/java.lang.reflect.Constructor.newInstanceWithCaller(Constructor.java:502)
+	at java.base/java.lang.reflect.Constructor.newInstance(Constructor.java:486)
+	at java.base/java.util.Optional.orElseGet(Optional.java:364)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+
+[ERROR] br.edu.ifs.academico.service.MovimentacaoPontosServiceTest.atualizarMovimentacao_DeveAtualizarSaldoCorretamente -- Time elapsed: 0.004 s <<< ERROR!
+java.lang.Error: 
+Unresolved compilation problem: 
+	Status cannot be resolved to a variable
+
+	at br.edu.ifs.academico.service.MovimentacaoPontosServiceTest.<init>(MovimentacaoPontosServiceTest.java:93)
+	at java.base/java.lang.reflect.Constructor.newInstanceWithCaller(Constructor.java:502)
+	at java.base/java.lang.reflect.Constructor.newInstance(Constructor.java:486)
+	at java.base/java.util.Optional.orElseGet(Optional.java:364)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+
+[ERROR] br.edu.ifs.academico.service.MovimentacaoPontosServiceTest.criarMovimentacao_DeveLancarErro_QuandoPromocaoVencida -- Time elapsed: 0.003 s <<< ERROR!
+java.lang.Error: 
+Unresolved compilation problem: 
+	Status cannot be resolved to a variable
+
+	at br.edu.ifs.academico.service.MovimentacaoPontosServiceTest.<init>(MovimentacaoPontosServiceTest.java:93)
+	at java.base/java.lang.reflect.Constructor.newInstanceWithCaller(Constructor.java:502)
+	at java.base/java.lang.reflect.Constructor.newInstance(Constructor.java:486)
+	at java.base/java.util.Optional.orElseGet(Optional.java:364)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+
+[ERROR] br.edu.ifs.academico.service.MovimentacaoPontosServiceTest.criarMovimentacao_DeveLancarErro_QuandoCartaoVencido -- Time elapsed: 0.003 s <<< ERROR!
+java.lang.Error: 
+Unresolved compilation problem: 
+	Status cannot be resolved to a variable
+
+	at br.edu.ifs.academico.service.MovimentacaoPontosServiceTest.<init>(MovimentacaoPontosServiceTest.java:93)
+	at java.base/java.lang.reflect.Constructor.newInstanceWithCaller(Constructor.java:502)
+	at java.base/java.lang.reflect.Constructor.newInstance(Constructor.java:486)
+	at java.base/java.util.Optional.orElseGet(Optional.java:364)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+
+[INFO] Running br.edu.ifs.academico.service.PromocaoServiceTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.449 s -- in br.edu.ifs.academico.service.PromocaoServiceTest
+[INFO] Running br.edu.ifs.academico.service.UsuarioServiceTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.190 s -- in br.edu.ifs.academico.service.UsuarioServiceTest
+[INFO] 
+[INFO] Results:
+[INFO] 
+[ERROR] Errors: 
+[ERROR]   MovimentacaoPontosServiceTest.<init>:93  Unresolved compilation problem: 
+	Status cannot be resolved to a variable
+
+[ERROR]   MovimentacaoPontosServiceTest.<init>:93  Unresolved compilation problem: 
+	Status cannot be resolved to a variable
+
+[ERROR]   MovimentacaoPontosServiceTest.<init>:93  Unresolved compilation problem: 
+	Status cannot be resolved to a variable
+
+[ERROR]   MovimentacaoPontosServiceTest.<init>:93  Unresolved compilation problem: 
+	Status cannot be resolved to a variable
+
+[ERROR]   MovimentacaoPontosServiceTest.<init>:93  Unresolved compilation problem: 
+	Status cannot be resolved to a variable
+
+[ERROR]   MovimentacaoPontosServiceTest.<init>:93  Unresolved compilation problem: 
+	Status cannot be resolved to a variable
+
+[INFO] 
+[ERROR] Tests run: 14, Failures: 0, Errors: 6, Skipped: 0
+[INFO] 
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD FAILURE
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  13.989 s
+[INFO] Finished at: 2026-01-27T18:24:27-03:00
+[INFO] ------------------------------------------------------------------------
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-surefire-plugin:3.5.4:test (default-test) on project Academico: 
+[ERROR] 
+[ERROR] See C:\Users\Fabrício Gregório\Desktop\Projetos\Projeto-Web-1\target\surefire-reports for the individual test results.
+[ERROR] See dump files (if any exist) [date].dump, [date]-jvmRun[N].dump and [date].dumpstream.
+[ERROR] -> [Help 1]
+[ERROR] 
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException
