@@ -12,14 +12,15 @@ import java.util.List;
 public class MovimentacaoMapper {
 
     public MovimentacaoResponseDTO toResponseDTO(MovimentacaoPontos movi) {
+        var cartao = movi.getCartao();
 
         return new MovimentacaoResponseDTO(
                 movi.getId(),
                 movi.getValor(),
                 movi.getPontos_calculados(),
                 movi.getDataOcorrencia(),
-                movi.getCartao().getId(),
-                movi.getCartao().getNome(),
+                cartao != null ? cartao.getId() : null,
+                cartao != null ? cartao.getNome() : null,
                 movi.getSaldo().getPrograma().getId(),
                 movi.getSaldo().getPrograma().getNome(),
                 new StatusResponseDTO(

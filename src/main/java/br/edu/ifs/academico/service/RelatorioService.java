@@ -69,7 +69,9 @@ public class RelatorioService {
                         long total = movs.stream()
                                         .filter(m -> m.getStatus() != null
                                                         && m.getStatus().getStatus() == Status.CREDITADO)
-                                        .filter(m -> m.getCartao().getId().equals(cartao.getId()))
+                                        .filter(m -> m.getCartao() != null
+                                                        && m.getCartao().getId() != null
+                                                        && m.getCartao().getId().equals(cartao.getId()))
                                         .mapToLong(m -> m.getPontos_calculados() != null ? m.getPontos_calculados() : 0)
                                         .sum();
 
@@ -86,7 +88,9 @@ public class RelatorioService {
                 List<HistoricoMovimentacaoDTO> historico = movs.stream()
                                 .map(m -> new HistoricoMovimentacaoDTO(
                                                 m.getId(),
-                                                m.getSaldo().getPrograma().getNome(),
+                                                m.getSaldo() != null && m.getSaldo().getPrograma() != null
+                                                                ? m.getSaldo().getPrograma().getNome()
+                                                                : "SEM_PROGRAMA",
                                                 m.getPontos_calculados(),
                                                 m.getDataOcorrencia(),
                                                 m.getStatus() != null ? m.getStatus().getStatus().name()
