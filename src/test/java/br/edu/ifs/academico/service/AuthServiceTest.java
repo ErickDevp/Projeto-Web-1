@@ -52,9 +52,8 @@ class AuthServiceTest {
         when(tokenRepository.findByToken(tokenString)).thenReturn(Optional.of(resetToken));
 
         // Act & Assert
-        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> 
-            service.redefinirSenha(dto)
-        );
+        ResponseStatusException exception = assertThrows(ResponseStatusException.class,
+                () -> service.redefinirSenha(dto));
         String reason = exception.getReason();
         assertNotNull(reason);
         assertTrue(reason.contains("Token expirado"));
@@ -84,8 +83,7 @@ class AuthServiceTest {
 
         // Assert
         verify(passwordEncoder).encode(novaSenha);
-        verify(usuarioRepository).save(argThat((Usuario user) -> 
-            user != null && user.getSenha().equals("encoded-new-pass")
-        ));
+        verify(usuarioRepository)
+                .save(argThat((Usuario user) -> user != null && user.getSenha().equals("encoded-new-pass")));
     }
 }

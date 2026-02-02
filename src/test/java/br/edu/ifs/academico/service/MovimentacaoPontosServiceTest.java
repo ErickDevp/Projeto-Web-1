@@ -63,57 +63,53 @@ class MovimentacaoPontosServiceTest {
 
         ProgramaFidelidade programa = new ProgramaFidelidade();
         programa.setId(1L);
-        
+
         Promocao promocao = new Promocao();
         promocao.setId(1L);
         promocao.setPontosPorReal(2.5);
         promocao.setDataFim(LocalDate.now().plusMonths(1));
-        
+
         programa.setPromocoes(List.of(promocao));
         cartao.setProgramas(new HashSet<>(List.of(programa)));
 
         // Correção no construtor: cartaoId, programaId, promocaoId, valor, data
         MovimentacaoRequestDTO dto = new MovimentacaoRequestDTO(
-                1L, 1L, 1L, BigDecimal.valueOf(100), LocalDate.now()
-        );
+                1L, 1L, 1L, BigDecimal.valueOf(100), LocalDate.now());
 
         when(usuarioRepository.findByEmail(email)).thenReturn(Optional.of(usuario));
         when(cartaoRepository.findById(1L)).thenReturn(Optional.of(cartao));
         when(saldoRepository.findByUsuarioIdAndProgramaId(1L, 1L)).thenReturn(Optional.empty());
-        when(saldoRepository.save(any(SaldoUsuarioPrograma.class))).thenAnswer(i ->
-            i.getArgument(0, SaldoUsuarioPrograma.class)
-        );
+        when(saldoRepository.save(any(SaldoUsuarioPrograma.class)))
+                .thenAnswer(i -> i.getArgument(0, SaldoUsuarioPrograma.class));
         when(movimentacaoRepository.save(any(MovimentacaoPontos.class))).thenAnswer(i -> {
             MovimentacaoPontos m = i.getArgument(0, MovimentacaoPontos.class);
-            if(m.getStatus() != null) {
+            if (m.getStatus() != null) {
                 m.getStatus().setId(1L); // Simulate ID generation
             }
             return m;
         });
-        
+
         when(statusRepository.findById(anyLong())).thenAnswer(i -> {
-             StatusMovimentacao status = new StatusMovimentacao();
-             status.setStatus(Status.PENDENTE);
-             status.setMovimentacao(new MovimentacaoPontos());
-             status.getMovimentacao().setSaldo(new SaldoUsuarioPrograma());
-             status.getMovimentacao().getSaldo().setPontos(0);
-             status.getMovimentacao().setPontos_calculados(250); // Avoid NPE
-             return Optional.of(status);
+            StatusMovimentacao status = new StatusMovimentacao();
+            status.setStatus(Status.PENDENTE);
+            status.setMovimentacao(new MovimentacaoPontos());
+            status.getMovimentacao().setSaldo(new SaldoUsuarioPrograma());
+            status.getMovimentacao().getSaldo().setPontos(0);
+            status.getMovimentacao().setPontos_calculados(250); // Avoid NPE
+            return Optional.of(status);
         });
-        
+
         // Mock response DTO
         when(movimentacaoMapper.toResponseDTO(any(MovimentacaoPontos.class))).thenReturn(new MovimentacaoResponseDTO(
-            1L, BigDecimal.valueOf(100), 250, LocalDate.now(),
-            1L, "Cartao Teste", 1L, "Programa Teste", null, Collections.emptyList()
-        ));
+                1L, BigDecimal.valueOf(100), 250, LocalDate.now(),
+                1L, "Cartao Teste", 1L, "Programa Teste", null, Collections.emptyList()));
 
         // Act
         service.criarMovimentacao(dto, email);
 
         // Assert
-        verify(movimentacaoRepository, atLeastOnce()).save(argThat((MovimentacaoPontos mov) -> 
-            mov != null && mov.getPontos_calculados() != null && mov.getPontos_calculados() == 250
-        ));
+        verify(movimentacaoRepository, atLeastOnce()).save(argThat((MovimentacaoPontos mov) -> mov != null
+                && mov.getPontos_calculados() != null && mov.getPontos_calculados() == 250));
     }
 
     @Test
@@ -130,23 +126,20 @@ class MovimentacaoPontosServiceTest {
         cartao.setDataValidade(LocalDate.now().minusDays(1)); // Vencido
 
         MovimentacaoRequestDTO dto = new MovimentacaoRequestDTO(
-                1L, 1L, 1L, BigDecimal.TEN, LocalDate.now()
-        );
+                1L, 1L, 1L, BigDecimal.TEN, LocalDate.now());
 
         when(usuarioRepository.findByEmail(email)).thenReturn(Optional.of(usuario));
         when(cartaoRepository.findById(1L)).thenReturn(Optional.of(cartao));
 
         // Act & Assert
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> 
-            service.criarMovimentacao(dto, email)
-        );
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> service.criarMovimentacao(dto, email));
         assertEquals("Cartão vencido", exception.getMessage());
     }
 
     @Test
     @DisplayName("Não deve permitir movimentação em cartão de outro usuário")
     void criarMovimentacao_DeveLancarErro_QuandoCartaoDeOutroUsuario() {
-         // Arrange
+        // Arrange
         String email = "test@user.com";
         Usuario usuario = new Usuario();
         usuario.setId(1L);
@@ -159,26 +152,23 @@ class MovimentacaoPontosServiceTest {
         cartao.setUsuario(outroUsuario); // Outro usuário
 
         MovimentacaoRequestDTO dto = new MovimentacaoRequestDTO(
-                1L, 1L, 1L, BigDecimal.TEN, LocalDate.now()
-        );
+                1L, 1L, 1L, BigDecimal.TEN, LocalDate.now());
 
         when(usuarioRepository.findByEmail(email)).thenReturn(Optional.of(usuario));
         when(cartaoRepository.findById(1L)).thenReturn(Optional.of(cartao));
 
         // Act & Assert
-        assertThrows(ResponseStatusException.class, () -> 
-            service.criarMovimentacao(dto, email)
-        );
+        assertThrows(ResponseStatusException.class, () -> service.criarMovimentacao(dto, email));
     }
-    
+
     @Test
     @DisplayName("Deve lançar erro quando a promoção estiver vencida")
     void criarMovimentacao_DeveLancarErro_QuandoPromocaoVencida() {
-         // Arrange
+        // Arrange
         String email = "test@user.com";
         Usuario usuario = new Usuario();
         usuario.setId(1L);
-        
+
         CartaoUsuario cartao = new CartaoUsuario();
         cartao.setId(1L);
         cartao.setUsuario(usuario);
@@ -186,25 +176,22 @@ class MovimentacaoPontosServiceTest {
 
         ProgramaFidelidade programa = new ProgramaFidelidade();
         programa.setId(1L);
-        
+
         Promocao promocao = new Promocao();
         promocao.setId(1L);
         promocao.setDataFim(LocalDate.now().minusDays(1)); // Vencida
-        
+
         programa.setPromocoes(Collections.singletonList(promocao));
         cartao.setProgramas(new HashSet<>(Collections.singletonList(programa)));
 
         MovimentacaoRequestDTO dto = new MovimentacaoRequestDTO(
-                1L, 1L, 1L, BigDecimal.TEN, LocalDate.now()
-        );
+                1L, 1L, 1L, BigDecimal.TEN, LocalDate.now());
 
         when(usuarioRepository.findByEmail(email)).thenReturn(Optional.of(usuario));
         when(cartaoRepository.findById(1L)).thenReturn(Optional.of(cartao));
 
         // Act & Assert
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> 
-            service.criarMovimentacao(dto, email)
-        );
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> service.criarMovimentacao(dto, email));
         assertEquals("Promoção vencida", exception.getMessage());
     }
 
@@ -218,7 +205,7 @@ class MovimentacaoPontosServiceTest {
 
         SaldoUsuarioPrograma saldo = new SaldoUsuarioPrograma();
         saldo.setPontos(500); // 500 pontos iniciais
-        
+
         MovimentacaoPontos movimentacao = new MovimentacaoPontos();
         movimentacao.setId(1L);
         movimentacao.setUsuario(usuario);
@@ -232,18 +219,15 @@ class MovimentacaoPontosServiceTest {
         movimentacao.setCartao(cartao);
 
         when(movimentacaoRepository.findById(1L)).thenReturn(Optional.of(movimentacao));
-        when(movimentacaoRepository.save(any(MovimentacaoPontos.class))).thenAnswer(i ->
-            i.getArgument(0, MovimentacaoPontos.class)
-        );
+        when(movimentacaoRepository.save(any(MovimentacaoPontos.class)))
+                .thenAnswer(i -> i.getArgument(0, MovimentacaoPontos.class));
         when(movimentacaoMapper.toResponseDTO(any(MovimentacaoPontos.class))).thenReturn(new MovimentacaoResponseDTO(
-            1L, BigDecimal.valueOf(300), 300, LocalDate.now(), 
-            1L, "C", 1L, "P", null, List.of()
-        ));
+                1L, BigDecimal.valueOf(300), 300, LocalDate.now(),
+                1L, "C", 1L, "P", null, List.of()));
 
         // Novo valor: 300
         MovimentacaoRequestDTO updateDto = new MovimentacaoRequestDTO(
-            null, null, null, BigDecimal.valueOf(300), null
-        );
+                null, null, null, BigDecimal.valueOf(300), null);
 
         // Act
         service.atualizarMovimentacao(updateDto, 1L, email);
@@ -263,13 +247,13 @@ class MovimentacaoPontosServiceTest {
         usuario.setEmail(email);
 
         SaldoUsuarioPrograma saldo = new SaldoUsuarioPrograma();
-        saldo.setPontos(500); 
+        saldo.setPontos(500);
 
         MovimentacaoPontos movimentacao = new MovimentacaoPontos();
         movimentacao.setId(1L);
         movimentacao.setUsuario(usuario);
         movimentacao.setSaldo(saldo);
-        movimentacao.setPontos_calculados(200); 
+        movimentacao.setPontos_calculados(200);
 
         when(movimentacaoRepository.findById(1L)).thenReturn(Optional.of(movimentacao));
 

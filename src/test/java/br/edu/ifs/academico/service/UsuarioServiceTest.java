@@ -30,7 +30,7 @@ class UsuarioServiceTest {
     @Mock
     private UsuarioRepository usuarioRepository;
 
-    @Mock  
+    @Mock
     private UsuarioMapper usuarioMapper;
 
     @Mock
@@ -54,15 +54,14 @@ class UsuarioServiceTest {
 
         // Criar arquivo > 5MB. 5MB = 5 * 1024 * 1024 bytes = 5242880 bytes.
         // Vamos criar um array de bytes um pouco maior.
-        byte[] content = new byte[5242881]; 
+        byte[] content = new byte[5242881];
         MockMultipartFile file = new MockMultipartFile("file", "large.png", "image/png", content);
 
         when(usuarioRepository.findByEmail(email)).thenReturn(Optional.of(usuario));
 
         // Act & Assert
-        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> 
-            service.salvarFotoPerfil(file, email)
-        );
+        ResponseStatusException exception = assertThrows(ResponseStatusException.class,
+                () -> service.salvarFotoPerfil(file, email));
         assertEquals(HttpStatus.BAD_REQUEST, exception.getStatusCode());
         String reason = exception.getReason();
         assertNotNull(reason);
@@ -77,14 +76,14 @@ class UsuarioServiceTest {
         Usuario usuario = new Usuario();
         usuario.setEmail(email);
 
-        MockMultipartFile file = new MockMultipartFile("file", "malware.exe", "application/x-msdownload", "fake content".getBytes());
+        MockMultipartFile file = new MockMultipartFile("file", "malware.exe", "application/x-msdownload",
+                "fake content".getBytes());
 
         when(usuarioRepository.findByEmail(email)).thenReturn(Optional.of(usuario));
 
         // Act & Assert
-        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> 
-            service.salvarFotoPerfil(file, email)
-        );
+        ResponseStatusException exception = assertThrows(ResponseStatusException.class,
+                () -> service.salvarFotoPerfil(file, email));
         assertEquals(HttpStatus.BAD_REQUEST, exception.getStatusCode());
         String reason = exception.getReason();
         assertNotNull(reason);
