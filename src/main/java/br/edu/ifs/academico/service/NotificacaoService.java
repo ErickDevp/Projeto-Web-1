@@ -19,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
+import java.util.Locale;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.List;
@@ -79,7 +80,7 @@ public class NotificacaoService {
                 Notificacao entity = Notificacao.builder()
                                 .titulo(notificacaoRequestDTO.titulo())
                                 .mensagem(notificacaoRequestDTO.mensagem())
-                                .tipo(notificacaoRequestDTO.tipo())
+                                .tipo(resolveTipo(notificacaoRequestDTO, null))
                                 .dataExpiracao(LocalDateTime.now().plusDays(notificacaoRequestDTO.prazoDia()))
                                 .build();
 
@@ -98,10 +99,26 @@ public class NotificacaoService {
                         notificacao.setMensagem(notificacaoRequestDTO.mensagem());
                 }
                 if (notificacaoRequestDTO.tipo() != null) {
-                        notificacao.setTipo(notificacaoRequestDTO.tipo());
+                        notificacao.setTipo(resolveTipo(notificacaoRequestDTO, notificacao));
                 }
 
                 return notificacaoMapper.toResponseDTO(notificacaoRepository.save(notificacao));
+        }
+
+        private String resolveTipo(NotificacaoRequestDTO dto, Notificacao existente) {
+                String tipo = dto.tipo() != null ? dto.tipo()
+                                : (existente != null ? existente.getTipo() : null);
+                String titulo = dto.titulo() != null ? dto.titulo()
+                                : (existente != null ? existente.getTitulo() : "");
+                String mensagem = dto.mensagem() != null ? dto.mensagem()
+                                : (existente != null ? existente.getMensagem() : "");
+
+                String texto = (titulo + " " + mensagem).toLowerCase(Locale.ROOT);
+                if (texto.contains("resumo semanal")) {
+                        return "RESUMO_SEMANAL";
+                }
+
+                return tipo;
         }
 
         @PreAuthorize("hasAnyRole('ADMIN', 'USER')")

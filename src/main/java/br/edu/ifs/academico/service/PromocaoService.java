@@ -19,7 +19,8 @@ public class PromocaoService {
     private final ProgramaFidelidadeRepository programaRepository;
     private final PromocaoMapper promocaoMapper;
 
-    public PromocaoService(PromocaoRepository promocaoRepository, ProgramaFidelidadeRepository programaRepository, PromocaoMapper promocaoMapper) {
+    public PromocaoService(PromocaoRepository promocaoRepository, ProgramaFidelidadeRepository programaRepository,
+            PromocaoMapper promocaoMapper) {
         this.promocaoRepository = promocaoRepository;
         this.programaRepository = programaRepository;
         this.promocaoMapper = promocaoMapper;
@@ -41,16 +42,16 @@ public class PromocaoService {
 
         if (promocaoRequestDTO.dataFim().isBefore(promocaoRequestDTO.dataInicio())) {
             throw new IllegalArgumentException(
-                    "A data de fim não pode ser anterior à data de início"
-            );
+                    "A data de fim não pode ser anterior à data de início");
         }
 
         Promocao entity = Promocao.builder()
                 .programa(programa)
                 .titulo(promocaoRequestDTO.titulo())
-                .descricao(promocaoRequestDTO.titulo())
+                .descricao(promocaoRequestDTO.descricao())
                 .dataInicio(promocaoRequestDTO.dataInicio())
                 .dataFim(promocaoRequestDTO.dataFim())
+                .pontosPorReal(promocaoRequestDTO.pontosPorReal())
                 .build();
 
         return promocaoMapper.toResponseDTO(promocaoRepository.save(entity));
@@ -63,8 +64,7 @@ public class PromocaoService {
 
         if (promocaoRequestDTO.dataFim().isBefore(promocaoRequestDTO.dataInicio())) {
             throw new IllegalArgumentException(
-                    "A data de fim não pode ser anterior à data de início"
-            );
+                    "A data de fim não pode ser anterior à data de início");
         }
 
         if (promocaoRequestDTO.titulo() != null) {
@@ -78,6 +78,9 @@ public class PromocaoService {
         }
         if (promocaoRequestDTO.dataFim() != null) {
             promocao.setDataFim(promocaoRequestDTO.dataFim());
+        }
+        if (promocaoRequestDTO.pontosPorReal() != null) {
+            promocao.setPontosPorReal(promocaoRequestDTO.pontosPorReal());
         }
 
         Long programaId = promocaoRequestDTO.programaId();
