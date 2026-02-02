@@ -1,6 +1,5 @@
 package br.edu.ifs.academico.service;
 
-import br.edu.ifs.academico.DTO.usuario.response.UsuarioResponseDTO;
 import br.edu.ifs.academico.entity.Usuario;
 import br.edu.ifs.academico.mapper.UsuarioMapper;
 import br.edu.ifs.academico.repository.UsuarioRepository;
@@ -9,6 +8,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.ArgumentCaptor;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.mock.web.MockMultipartFile;
@@ -17,13 +17,14 @@ import org.springframework.web.server.ResponseStatusException;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.junit.jupiter.api.BeforeEach;
 
-import java.nio.charset.StandardCharsets;
 import java.util.Optional;
+import java.util.Objects;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
+@SuppressWarnings("null")
 class UsuarioServiceTest {
 
     @Mock
@@ -40,7 +41,7 @@ class UsuarioServiceTest {
 
     @BeforeEach
     void setUp() {
-        ReflectionTestUtils.setField(service, "storagePath", "uploads/tests");
+        ReflectionTestUtils.setField(Objects.requireNonNull(service), "storagePath", "uploads/tests");
     }
 
     @Test
@@ -63,7 +64,9 @@ class UsuarioServiceTest {
             service.salvarFotoPerfil(file, email)
         );
         assertEquals(HttpStatus.BAD_REQUEST, exception.getStatusCode());
-        assertEquals("Arquivo excede 5MB", exception.getReason());
+        String reason = exception.getReason();
+        assertNotNull(reason);
+        assertEquals("Arquivo excede 5MB", reason);
     }
 
     @Test
@@ -83,7 +86,9 @@ class UsuarioServiceTest {
             service.salvarFotoPerfil(file, email)
         );
         assertEquals(HttpStatus.BAD_REQUEST, exception.getStatusCode());
-        assertTrue(exception.getReason().contains("Formato inválido"));
+        String reason = exception.getReason();
+        assertNotNull(reason);
+        assertTrue(reason.contains("Formato inválido"));
     }
 
     @Test
@@ -97,16 +102,15 @@ class UsuarioServiceTest {
         MockMultipartFile file = new MockMultipartFile("file", "foto.png", "image/png", "img-content".getBytes());
 
         when(usuarioRepository.findByEmail(email)).thenReturn(Optional.of(usuario));
-        // Mock save to capture the change
-        when(usuarioRepository.save(any(Usuario.class))).thenAnswer(i -> i.getArgument(0));
-
         // Act
         service.salvarFotoPerfil(file, email);
 
         // Assert
-        verify(usuarioRepository).save(argThat(user -> {
-            String path = user.getCaminhoFoto();
-            return path != null && path.endsWith(".png");
-        }));
+        ArgumentCaptor<Usuario> captor = ArgumentCaptor.forClass(Usuario.class);
+        verify(usuarioRepository).save(captor.capture());
+        Usuario savedUser = captor.getValue();
+        assertNotNull(savedUser);
+        assertNotNull(savedUser.getCaminhoFoto());
+        assertTrue(savedUser.getCaminhoFoto().endsWith(".png"));
     }
 }

@@ -4,7 +4,6 @@ import br.edu.ifs.academico.DTO.relatorio.EvolucaoMensalDTO;
 import br.edu.ifs.academico.DTO.relatorio.HistoricoMovimentacaoDTO;
 import br.edu.ifs.academico.DTO.relatorio.PontosPorCartaoDTO;
 import br.edu.ifs.academico.DTO.relatorio.RelatorioResponseDTO;
-import br.edu.ifs.academico.entity.MovimentacaoPontos;
 import br.edu.ifs.academico.entity.enums.Status;
 import br.edu.ifs.academico.repository.CartaoUsuarioRepository;
 import br.edu.ifs.academico.repository.MovimentacaoPontosRepository;

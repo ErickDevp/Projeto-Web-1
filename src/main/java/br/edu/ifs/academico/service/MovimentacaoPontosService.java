@@ -65,7 +65,6 @@ public class MovimentacaoPontosService {
                 }
 
                 var saldo = movimentacao.getSaldo();
-                var cartao = movimentacao.getCartao();
 
                 // Atualizar o valor da movimentação
                 if (movimentacaoRequestDTO.valor() != null) {

@@ -37,7 +37,7 @@ class ComprovanteControllerIT extends IntegrationTestSupport {
                         .build())
         );
 
-        Promocao promocao = Objects.requireNonNull(
+        Objects.requireNonNull(
                 promocaoRepository.save(Promocao.builder()
                         .titulo("Promoção Teste")
                         .descricao("Promoção para testes")
@@ -158,7 +158,7 @@ class ComprovanteControllerIT extends IntegrationTestSupport {
                         .build())
         );
 
-        Promocao promocao = Objects.requireNonNull(
+        Objects.requireNonNull(
                 promocaoRepository.save(Promocao.builder()
                         .titulo("Promoção Segurança")
                         .descricao("Teste de segurança")

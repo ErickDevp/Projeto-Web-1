@@ -20,7 +20,6 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.util.Set;
-import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.List;
 
@@ -54,12 +53,6 @@ public class NotificacaoService {
 
                 List<NotificacaoUsuario> usuarioNotificacoes = notificacaoUsuarioRepository
                                 .findByUsuarioAndNotificacaoIn(usuario, notificacoes);
-
-                Map<Long, Boolean> lidas = usuarioNotificacoes.stream()
-                                .collect(Collectors.toMap(
-                                                nu -> nu.getNotificacao().getId(),
-                                                NotificacaoUsuario::isLida,
-                                                (a, b) -> b));
 
                 Set<Long> ocultas = usuarioNotificacoes.stream()
                                 .filter(NotificacaoUsuario::isOculta)

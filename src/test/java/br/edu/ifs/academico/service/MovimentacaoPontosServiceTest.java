@@ -20,14 +20,15 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
+@SuppressWarnings("null")
 class MovimentacaoPontosServiceTest {
 
     @Mock
@@ -79,16 +80,18 @@ class MovimentacaoPontosServiceTest {
         when(usuarioRepository.findByEmail(email)).thenReturn(Optional.of(usuario));
         when(cartaoRepository.findById(1L)).thenReturn(Optional.of(cartao));
         when(saldoRepository.findByUsuarioIdAndProgramaId(1L, 1L)).thenReturn(Optional.empty());
-        when(saldoRepository.save(any(SaldoUsuarioPrograma.class))).thenAnswer(i -> i.getArgument(0));
+        when(saldoRepository.save(any(SaldoUsuarioPrograma.class))).thenAnswer(i ->
+            i.getArgument(0, SaldoUsuarioPrograma.class)
+        );
         when(movimentacaoRepository.save(any(MovimentacaoPontos.class))).thenAnswer(i -> {
-            MovimentacaoPontos m = i.getArgument(0);
+            MovimentacaoPontos m = i.getArgument(0, MovimentacaoPontos.class);
             if(m.getStatus() != null) {
                 m.getStatus().setId(1L); // Simulate ID generation
             }
             return m;
         });
         
-        when(statusRepository.findById(any())).thenAnswer(i -> {
+        when(statusRepository.findById(anyLong())).thenAnswer(i -> {
              StatusMovimentacao status = new StatusMovimentacao();
              status.setStatus(Status.PENDENTE);
              status.setMovimentacao(new MovimentacaoPontos());
@@ -108,8 +111,8 @@ class MovimentacaoPontosServiceTest {
         service.criarMovimentacao(dto, email);
 
         // Assert
-        verify(movimentacaoRepository, atLeastOnce()).save(argThat(mov -> 
-            mov.getPontos_calculados() != null && mov.getPontos_calculados() == 250
+        verify(movimentacaoRepository, atLeastOnce()).save(argThat((MovimentacaoPontos mov) -> 
+            mov != null && mov.getPontos_calculados() != null && mov.getPontos_calculados() == 250
         ));
     }
 
@@ -229,8 +232,10 @@ class MovimentacaoPontosServiceTest {
         movimentacao.setCartao(cartao);
 
         when(movimentacaoRepository.findById(1L)).thenReturn(Optional.of(movimentacao));
-        when(movimentacaoRepository.save(any())).thenAnswer(i -> i.getArgument(0));
-        when(movimentacaoMapper.toResponseDTO(any())).thenReturn(new MovimentacaoResponseDTO(
+        when(movimentacaoRepository.save(any(MovimentacaoPontos.class))).thenAnswer(i ->
+            i.getArgument(0, MovimentacaoPontos.class)
+        );
+        when(movimentacaoMapper.toResponseDTO(any(MovimentacaoPontos.class))).thenReturn(new MovimentacaoResponseDTO(
             1L, BigDecimal.valueOf(300), 300, LocalDate.now(), 
             1L, "C", 1L, "P", null, List.of()
         ));

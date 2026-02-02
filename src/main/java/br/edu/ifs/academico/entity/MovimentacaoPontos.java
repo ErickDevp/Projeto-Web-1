@@ -20,6 +20,7 @@ public class MovimentacaoPontos {
     @Column(name = "id_movimentacoes")
     private Long id;
 
+    @Builder.Default
     @Column(nullable = false)
     private boolean creditada = false;
 

@@ -21,6 +21,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
+@SuppressWarnings("null")
 class AuthServiceTest {
 
     @Mock
@@ -54,7 +55,9 @@ class AuthServiceTest {
         ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> 
             service.redefinirSenha(dto)
         );
-        assertTrue(exception.getReason().contains("Token expirado"));
+        String reason = exception.getReason();
+        assertNotNull(reason);
+        assertTrue(reason.contains("Token expirado"));
     }
 
     @Test
@@ -81,8 +84,8 @@ class AuthServiceTest {
 
         // Assert
         verify(passwordEncoder).encode(novaSenha);
-        verify(usuarioRepository).save(argThat(user -> 
-            user.getSenha().equals("encoded-new-pass")
+        verify(usuarioRepository).save(argThat((Usuario user) -> 
+            user != null && user.getSenha().equals("encoded-new-pass")
         ));
     }
 }

@@ -16,7 +16,6 @@ import br.edu.ifs.academico.repository.MovimentacaoPontosRepository;
 import br.edu.ifs.academico.repository.ProgramaFidelidadeRepository;
 import br.edu.ifs.academico.repository.PromocaoRepository;
 import br.edu.ifs.academico.repository.SaldoUsuarioProgramaRepository;
-import br.edu.ifs.academico.repository.StatusMovimentacaoRepository;
 import br.edu.ifs.academico.repository.UsuarioRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,7 +40,6 @@ public class InicializacaoConfig {
         private final CartaoUsuarioRepository cartaoRepository;
         private final SaldoUsuarioProgramaRepository saldoRepository;
         private final MovimentacaoPontosRepository movimentacaoRepository;
-        private final StatusMovimentacaoRepository statusRepository;
         private final PromocaoRepository promocaoRepository;
         private final PasswordEncoder encoder;
 
@@ -50,7 +48,6 @@ public class InicializacaoConfig {
                         CartaoUsuarioRepository cartaoRepository,
                         SaldoUsuarioProgramaRepository saldoRepository,
                         MovimentacaoPontosRepository movimentacaoRepository,
-                        StatusMovimentacaoRepository statusRepository,
                         PromocaoRepository promocaoRepository,
                         PasswordEncoder encoder) {
                 this.usuarioRepository = usuarioRepository;
@@ -58,7 +55,6 @@ public class InicializacaoConfig {
                 this.cartaoRepository = cartaoRepository;
                 this.saldoRepository = saldoRepository;
                 this.movimentacaoRepository = movimentacaoRepository;
-                this.statusRepository = statusRepository;
                 this.promocaoRepository = promocaoRepository;
                 this.encoder = encoder;
         }
